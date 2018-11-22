@@ -60,9 +60,9 @@ def go_rules_dependencies():
     _maybe(
         http_archive,
         name = "com_google_protobuf",
-        # v3.6.1, latest as of 2018-09-28
-        urls = ["https://codeload.github.com/google/protobuf/zip/48cb18e5c419ddd23d9badcfe4e9df7bde1979b2"],
-        strip_prefix = "protobuf-48cb18e5c419ddd23d9badcfe4e9df7bde1979b2",
+        # v3.6.1.1, latest as of 2018-11-22
+        urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.6.1.1.zip"],
+        strip_prefix = "protobuf-3.6.1.1",
         type = "zip",
     )
     _maybe(
