@@ -14,7 +14,7 @@
 
 load(
     "@io_bazel_rules_go//go/private:context.bzl",
-    "go_context",
+    _go_context = "go_context",
 )
 load(
     "@io_bazel_rules_go//go/private:providers.bzl",
@@ -27,8 +27,11 @@ load(
 )
 load(
     "@io_bazel_rules_go//go/private:repositories.bzl",
-    "go_register_toolchains",
-    "go_rules_dependencies",
+    _go_rules_dependencies = "go_rules_dependencies",
+)
+load(
+    "@io_bazel_rules_go//go/toolchain:toolchains.bzl",
+    _go_register_toolchains = "go_register_toolchains",
 )
 load(
     "@io_bazel_rules_go//go/private:sdk.bzl",
@@ -57,7 +60,7 @@ load(
 )
 load(
     "@io_bazel_rules_go//extras:embed_data.bzl",
-    "go_embed_data",
+    _go_embed_data = "go_embed_data",
 )
 load(
     "@io_bazel_rules_go//go/private:tools/path.bzl",
@@ -75,6 +78,11 @@ load(
 # Current version or next version to be tagged. Gazelle and other tools may
 # check this to determine compatibility.
 RULES_GO_VERSION = "0.15.8"
+
+go_context = _go_context
+go_rules_dependencies = _go_rules_dependencies
+go_register_toolchains = _go_register_toolchains
+go_embed_data = _go_embed_data
 
 GoLibrary = _GoLibrary
 """See go/providers.rst#GoLibrary for full documentation."""
