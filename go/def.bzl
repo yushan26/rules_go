@@ -42,7 +42,7 @@ load(
 )
 load(
     "@io_bazel_rules_go//go/private:rules/sdk.bzl",
-    "go_sdk",
+    _go_sdk = "go_sdk",
 )
 load(
     "@io_bazel_rules_go//go/private:go_toolchain.bzl",
@@ -83,6 +83,7 @@ go_context = _go_context
 go_rules_dependencies = _go_rules_dependencies
 go_register_toolchains = _go_register_toolchains
 go_embed_data = _go_embed_data
+go_sdk = _go_sdk
 
 GoLibrary = _GoLibrary
 """See go/providers.rst#GoLibrary for full documentation."""

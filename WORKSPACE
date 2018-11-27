@@ -1,5 +1,6 @@
 workspace(name = "io_bazel_rules_go")
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
 load("@io_bazel_rules_go//proto:def.bzl", "proto_register_toolchains")
@@ -9,10 +10,10 @@ go_rules_dependencies()
 go_register_toolchains()
 
 # Needed for tests
-http_archive(
+git_repository(
     name = "bazel_gazelle",
-    sha256 = "c0a5739d12c6d05b6c1ad56f2200cb0b57c5a70e03ebd2f7b87ce88cabf09c7b",
-    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.14.0/bazel-gazelle-0.14.0.tar.gz"],
+    commit = "455e69320ee92c6f3bfb267aa211a4fa6ebc4e5d",  # master as of 2018-11-27
+    remote = "https://github.com/bazelbuild/bazel-gazelle",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
