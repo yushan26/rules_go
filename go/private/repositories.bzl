@@ -60,9 +60,12 @@ def go_rules_dependencies():
     _maybe(
         http_archive,
         name = "com_google_protobuf",
-        # v3.6.1.1, latest as of 2018-11-22
-        urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.6.1.1.zip"],
-        strip_prefix = "protobuf-3.6.1.1",
+        # Latest tagged version at time of writing is v3.6.1, which doesn't
+        # include fixes for --incompatible_package_name_is_a_function,
+        # --incompatible_new_actions_api, and possibly others.
+        # TODO: Update to a newer tagged version when available.
+        urls = ["https://codeload.github.com/google/protobuf/zip/7b28271a61a3da0a37f6fda399b0c4c86464e5b3"],
+        strip_prefix = "protobuf-7b28271a61a3da0a37f6fda399b0c4c86464e5b3",
         type = "zip",
     )
     _maybe(
