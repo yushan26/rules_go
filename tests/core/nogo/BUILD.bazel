@@ -1,5 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "nogo")
+
 filegroup(
     name = "rules_go_deps",
     srcs = [":common.bzl"],
     visibility = ["//visibility:public"],
+)
+
+# A nogo binary that does not require support for facts, used to make
+# tests in this release branch work.
+nogo(
+    name = "no_facts_nogo",
+    visibility = ["//visibility:public"],
+    deps = ["@org_golang_x_tools//go/analysis/passes/buildtag:go_tool_library"],
 )
