@@ -47,7 +47,7 @@ def emit_compile(
 
     inputs = (sources + [go.package_list] +
               [archive.data.file for archive in archives] +
-              go.sdk.tools + go.stdlib.libs)
+              go.sdk.tools + go.sdk.headers + go.stdlib.libs)
     outputs = [out_lib]
 
     builder_args = go.builder_args(go)
@@ -63,7 +63,7 @@ def emit_compile(
 
     tool_args = go.tool_args(go)
     if asmhdr:
-        tool_args.add("-asmhdr", asmhdr)
+        builder_args.add("-asmhdr", asmhdr)
         outputs.append(asmhdr)
     tool_args.add("-trimpath", ".")
 
