@@ -26,6 +26,5 @@ platforms:
     test_targets:
     - "--"
     - "..."
-    - "-//:vet"
     - "-//tests/core/go_path:go_path_test"
     - "-//tests/core/stdlib:buildid_test"
