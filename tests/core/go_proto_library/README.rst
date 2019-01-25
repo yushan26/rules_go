@@ -18,3 +18,16 @@ transitive_test
 
 Checks that `go_proto_library`_ can import a proto dependency that is
 embedded in a `go_library`_. Verifies #1422.
+
+gofast_test and gofast_grpc_test
+--------------------------------
+
+Checks that the gogo `gofast` compiler plugins build and link.  In
+particular, these plugins only depoend on `github.com/golang/protobuf`.
+
+gogofast_test and gogofast_grpc_test
+------------------------------------
+
+Checks that the `gogofast` compiler plugins build and link.  In
+particular, these plugins depend on both `github.com/gogo/protobuf`
+and `github.com/golang/protobuf`.
