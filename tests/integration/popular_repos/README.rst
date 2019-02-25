@@ -210,11 +210,3 @@ This runs tests from the repository `google.golang.org/grpc <https://google.gola
 * @org_golang_google_grpc//test/bufconn:go_default_test
 
 
-com_github_mattn_go_sqlite3
-___________________________
-
-This runs tests from the repository `github.com/mattn/go-sqlite3 <https://github.com/mattn/go-sqlite3>`_
-
-* @com_github_mattn_go_sqlite3//:go_default_test
-
-

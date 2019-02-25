@@ -210,10 +210,3 @@ test_suite(
         "@org_golang_google_grpc//test/bufconn:go_default_test",
     ],
 )
-
-test_suite(
-    name = "com_github_mattn_go_sqlite3",
-    tests = [
-        "@com_github_mattn_go_sqlite3//:go_default_test",
-    ],
-)
