@@ -85,7 +85,7 @@ load(
 
 # Current version or next version to be tagged. Gazelle and other tools may
 # check this to determine compatibility.
-RULES_GO_VERSION = "0.16.6"
+RULES_GO_VERSION = "0.16.7"
 
 go_context = _go_context
 go_rules_dependencies = _go_rules_dependencies
