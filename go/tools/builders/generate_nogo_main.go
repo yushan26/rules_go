@@ -22,6 +22,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"go/build"
 	"io/ioutil"
 	"log"
 	"math"
@@ -94,6 +95,17 @@ func run(args []string) error {
 	}
 	if *out == "" {
 		return errors.New("must provide output file")
+	}
+
+	isGo112 := false
+	for _, v := range build.Default.ReleaseTags {
+		if v == "go1.12" {
+			isGo112 = true
+		}
+	}
+	if *enableVet && isGo112 {
+		log.Printf("WARNING: nogo with vet = True is not compatible with Go 1.12 and rules_go 0.16. vet will not be run. Please upgrade to rules_go 0.17+, or stay on an earlier version of Go to continue using vet.")
+		*enableVet = false
 	}
 
 	outFile := os.Stdout

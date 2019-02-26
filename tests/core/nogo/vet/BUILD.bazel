@@ -28,6 +28,7 @@ bazel_test(
     ),
     command = "build",
     nogo = NOGO,
+    tags = ["manual"],
     targets = [":no_errors"],
 )
 
@@ -43,6 +44,7 @@ bazel_test(
     ),
     command = "build",
     nogo = NOGO,
+    tags = ["manual"],
     targets = [":has_errors"],
 )
 
@@ -56,6 +58,7 @@ bazel_test(
             DOES_NOT_CONTAIN_ERR_TMPL.format(err = "redundant or: true || true"),
     ),
     command = "build",
+    tags = ["manual"],
     targets = [":has_errors"],
 )
 
