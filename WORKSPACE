@@ -57,3 +57,11 @@ http_archive(
       "https://github.com/bazelbuild/bazel-toolchains/archive/be10bee3010494721f08a0fccd7f57411a1e773e.tar.gz",
     ],
 )
+
+load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+
+# Creates toolchain configuration for remote execution with BuildKite CI
+# for rbe_ubuntu1604
+rbe_autoconfig(
+    name = "buildkite_config",
+)
