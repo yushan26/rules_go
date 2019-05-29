@@ -57,16 +57,12 @@ load(
     "goos_to_shared_extension",
 )
 load(
-    "@io_bazel_rules_go//go/private:skylib/lib/paths.bzl",
-    "paths",
-)
-load(
-    "@io_bazel_rules_go//go/private:skylib/lib/structs.bzl",
-    "structs",
-)
-load(
     "@io_bazel_rules_go//go/platform:apple.bzl",
     "apple_ensure_options",
+)
+load(
+    "@bazel_skylib//lib:paths.bzl",
+    "paths",
 )
 
 GoContext = provider()
