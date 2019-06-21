@@ -6,6 +6,13 @@ platforms:
     - "..."
     test_targets:
     - "..."
+  ubuntu1804_bazel0261:
+    platform: ubuntu1804
+    bazel: 0.26.1 # last known green Bazel version
+    build_targets:
+    - "..."
+    test_targets:
+    - "..."
   ubuntu1804:
     build_targets:
     - "..."
