@@ -16,3 +16,8 @@ This builds binaries using `main.go <main.go>`_ in multiple configurations, and 
 test `written in go <cross_test.go>`_.
 The test executes the unix command "file" on the binaries to determine their type, and checks
 they were built for the expected architecture.
+
+proto_test
+----------
+
+Tests that a ``go_proto_library`` can be cross-compiled with ``--platforms``.
