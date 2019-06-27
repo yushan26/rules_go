@@ -13,6 +13,13 @@ platforms:
     - "..."
     test_targets:
     - "..."
+  ubuntu1804_bazel0271:
+    platform: ubuntu1804
+    bazel: 0.27.1rc1
+    build_targets:
+    - "..."
+    test_targets:
+    - "..."
   ubuntu1804:
     build_targets:
     - "..."
