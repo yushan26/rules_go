@@ -136,10 +136,3 @@ def generate_toolchains(host, sdk):
             cgo_link_flags = cgo_link_flags,
         ))
     return toolchains
-
-def generate_toolchain_names():
-    # Keep in sync with generate_toolchains
-    return [
-        "go_{}_{}".format(target_goos, target_goarch)
-        for target_goos, target_goarch in GOOS_GOARCH
-    ]
