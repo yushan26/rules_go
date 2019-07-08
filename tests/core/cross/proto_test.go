@@ -15,6 +15,7 @@
 package proto_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/bazelbuild/rules_go/go/tools/bazel_testing"
@@ -54,9 +55,14 @@ func TestMain(m *testing.M) {
 }
 
 func TestProto(t *testing.T) {
+	platform := "linux_amd64"
+	if runtime.GOOS == "linux" {
+		platform = "darwin_amd64"
+	}
+
 	args := []string{
 		"build",
-		"--platforms=@io_bazel_rules_go//go/toolchain:ios_amd64",
+		"--platforms=@io_bazel_rules_go//go/toolchain:" + platform,
 		":cross_go_proto",
 	}
 	if err := bazel_testing.RunBazel(args...); err != nil {
