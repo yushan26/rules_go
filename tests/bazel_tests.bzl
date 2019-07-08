@@ -7,7 +7,7 @@ load(
     "env_execute",
 )
 load(
-    "@io_bazel_rules_go//go/private:go_toolchain.bzl",
+    "@io_bazel_rules_go//go/platform:list.bzl",
     "generate_toolchain_names",
 )
 load(
