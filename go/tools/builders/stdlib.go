@@ -57,6 +57,11 @@ func stdlib(args []string) error {
 	// Now switch to the newly created GOROOT
 	os.Setenv("GOROOT", output)
 
+	// Disable modules for the 'go install' command. Depending on the sandboxing
+	// mode, there may be a go.mod file in a parent directory which will turn
+	// modules on in "auto" mode.
+	os.Setenv("GO111MODULE", "off")
+
 	// Create a temporary cache directory. "go build" requires this starting
 	// in Go 1.12.
 	cachePath := filepath.Join(output, ".gocache")
