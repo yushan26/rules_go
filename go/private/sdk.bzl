@@ -18,8 +18,22 @@ load(
     "executable_path",
 )
 load(
+    "@io_bazel_rules_go//go/private:nogo.bzl",
+    "go_register_nogo",
+)
+load(
+    "@io_bazel_rules_go//go/private:sdk_list.bzl",
+    "DEFAULT_VERSION",
+    "MIN_SUPPORTED_VERSION",
+    "SDK_REPOSITORIES",
+)
+load(
     "@io_bazel_rules_go//go/platform:list.bzl",
     "generate_toolchain_names",
+)
+load(
+    "@io_bazel_rules_go//go/private:skylib/lib/versions.bzl",
+    "versions",
 )
 
 def _go_host_sdk_impl(ctx):
@@ -209,3 +223,27 @@ def _detect_sdk_platform(ctx, goroot):
         if f.find("_") >= 0:
             return f
     fail("Could not detect SDK platform")
+
+def go_register_toolchains(go_version = DEFAULT_VERSION, nogo = None):
+    """See /go/toolchains.rst#go-register-toolchains for full documentation."""
+    if "go_sdk" not in native.existing_rules():
+        if go_version in SDK_REPOSITORIES:
+            if not versions.is_at_least(MIN_SUPPORTED_VERSION, go_version):
+                print("DEPRECATED: go_register_toolchains: support for Go versions before {} will be removed soon".format(MIN_SUPPORTED_VERSION))
+            go_download_sdk(
+                name = "go_sdk",
+                sdks = SDK_REPOSITORIES[go_version],
+            )
+        elif go_version == "host":
+            go_host_sdk(
+                name = "go_sdk",
+            )
+        else:
+            fail("Unknown go version {}".format(go_version))
+
+    if nogo:
+        # Override default definition in go_rules_dependencies().
+        go_register_nogo(
+            name = "io_bazel_rules_nogo",
+            nogo = nogo,
+        )
