@@ -7,16 +7,19 @@ platforms:
     test_targets:
     - "..."
   ubuntu1804:
+    bazel: 0.25.2 # no fixes for incompatibilities after this
     build_targets:
     - "..."
     test_targets:
     - "..."
   macos:
+    bazel: 0.25.2 # no fixes for incompatibilities after this
     build_targets:
     - "..."
     test_targets:
     - "..."
   rbe_ubuntu1604:
+    bazel: 0.25.2 # no fixes for incompatibilities after this
     build_targets:
     - "..."
     test_flags:
