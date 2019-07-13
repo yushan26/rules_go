@@ -29,6 +29,7 @@ load(
     "@io_bazel_rules_go//go/private:providers.bzl",
     "GoArchive",
     "GoArchiveData",
+    "effective_importpath_pkgpath",
     "get_archive",
 )
 
@@ -66,11 +67,13 @@ def emit_archive(go, source = None):
     if split.asm:
         asmhdr = go.declare_file(go, "go_asm.h")
 
+    importpath, _ = effective_importpath_pkgpath(source.library)
+    importmap = "main" if source.library.is_main else source.library.importmap
     if len(split.asm) == 0 and not source.cgo_archives:
         go.compile(
             go,
             sources = split.go,
-            importpath = source.library.importmap,
+            importpath = importmap,
             archives = direct,
             out_lib = out_lib,
             out_export = out_export,
@@ -87,7 +90,7 @@ def emit_archive(go, source = None):
         go.compile(
             go,
             sources = split.go + split.asm + split.headers,
-            importpath = source.library.importmap,
+            importpath = importmap,
             archives = direct,
             out_lib = partial_lib,
             out_export = out_export,
