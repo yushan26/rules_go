@@ -2,6 +2,7 @@ Basic go_binary functionality
 =============================
 
 .. _go_binary: /go/core.rst#_go_binary
+.. _#2168: https://github.com/bazelbuild/rules_go/issues/2168
 
 Tests to ensure the basic features of go_binary are working as expected.
 
@@ -36,3 +37,11 @@ stamp_test
 Test that the `go_binary`_ ``x_defs`` attribute works correctly, both in a
 binary and in an embedded library. Tests regular stamps and stamps that
 depend on values from the workspace status script. Verifies #2000.
+
+static_test
+-----------
+Test that `go_binary`_ rules with ``static = "on"`` with and without cgo
+produce static binaries. Verifies `#2168`_.
+
+This test only runs on Linux. The darwin external linker cannot produce
+static binaries since there is no static version of C runtime libraries.
