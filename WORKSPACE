@@ -49,9 +49,9 @@ bazel_skylib_workspace()
 
 git_repository(
     name = "bazel_gazelle",
-    commit = "aa1a9cfe4845bc83482af92addbfcd41f8dc51f0",  # master as of 2019-01-27
+    commit = "ac6c8b7d294409099e382b872a5415d38fe95af4",
     remote = "https://github.com/bazelbuild/bazel-gazelle",
-    shallow_since = "1548631399 -0500",
+    shallow_since = "1566426109 -0400",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
