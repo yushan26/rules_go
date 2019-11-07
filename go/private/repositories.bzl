@@ -21,6 +21,7 @@ load("@io_bazel_rules_go//go/private:nogo.bzl", "DEFAULT_NOGO", "go_register_nog
 load("@io_bazel_rules_go//go/platform:list.bzl", "GOOS_GOARCH")
 load("@io_bazel_rules_go//proto:gogo.bzl", "gogo_special_proto")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def go_rules_dependencies():
     """Declares workspaces the Go rules depend on. Workspaces that use
@@ -44,6 +45,20 @@ def go_rules_dependencies():
     _maybe(
         go_rules_compat,
         name = "io_bazel_rules_go_compat",
+    )
+
+    # Repository of standard constraint settings and values.
+    # Bazel declares this automatically after 0.28.0, but it's better to
+    # define an explicit version.
+    _maybe(
+        http_archive,
+        name = "platforms",
+        strip_prefix = "platforms-441afe1bfdadd6236988e9cac159df6b5a9f5a98",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/archive/441afe1bfdadd6236988e9cac159df6b5a9f5a98.zip",
+            "https://github.com/bazelbuild/platforms/archive/441afe1bfdadd6236988e9cac159df6b5a9f5a98.zip",
+        ],
+        sha256 = "a07fe5e75964361885db725039c2ba673f0ee0313d971ae4f50c9b18cd28b0b5",
     )
 
     # Needed by rules_go implementation and tests.
