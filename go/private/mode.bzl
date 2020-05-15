@@ -107,23 +107,20 @@ def get_mode(ctx, host_only, go_toolchain, go_context_data):
         getattr(ctx.attr, "static", None),
         "static" in ctx.features,
     )
-    race = _ternary(
-        getattr(ctx.attr, "race", None),
-        force_race,
-        "race" in ctx.features,
-    )
-    msan = _ternary(
-        getattr(ctx.attr, "msan", None),
-        "msan" in ctx.features,
-    )
     pure = _ternary(
         getattr(ctx.attr, "pure", None),
         force_pure,
         "pure" in ctx.features,
     )
-    if race and pure:
-        # You are not allowed to compile in race mode with pure enabled
-        race = False
+    race = _ternary(
+        getattr(ctx.attr, "race", None),
+        force_race,
+        ("on" if "race" in ctx.features and not pure else "off"),
+    )
+    msan = _ternary(
+        getattr(ctx.attr, "msan", None),
+        ("on" if "msan" in ctx.features and not pure else "off"),
+    )
     debug = ctx.var["COMPILATION_MODE"] == "dbg"
     strip_mode = "sometimes"
     if go_context_data:
