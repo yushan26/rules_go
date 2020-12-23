@@ -91,13 +91,13 @@ ________________
 
 This runs tests from the repository `golang.org/x/sys <https://golang.org/x/sys>`_
 
-* @org_golang_x_sys//cpu:go_default_test
-* @org_golang_x_sys//plan9:go_default_test
-* @org_golang_x_sys//windows:go_default_test
-* @org_golang_x_sys//windows/registry:go_default_test
-* @org_golang_x_sys//windows/svc:go_default_test
-* @org_golang_x_sys//windows/svc/eventlog:go_default_test
-* @org_golang_x_sys//windows/svc/mgr:go_default_test
+* @org_golang_x_sys//cpu:cpu_test
+* @org_golang_x_sys//plan9:plan9_test
+* @org_golang_x_sys//windows:windows_test
+* @org_golang_x_sys//windows/registry:registry_test
+* @org_golang_x_sys//windows/svc:svc_test
+* @org_golang_x_sys//windows/svc/eventlog:eventlog_test
+* @org_golang_x_sys//windows/svc/mgr:mgr_test
 
 
 org_golang_x_text
@@ -190,10 +190,10 @@ _________________
 
 This runs tests from the repository `golang.org/x/sync <https://golang.org/x/sync>`_
 
-* @org_golang_x_sync//errgroup:go_default_test
-* @org_golang_x_sync//semaphore:go_default_test
-* @org_golang_x_sync//singleflight:go_default_test
-* @org_golang_x_sync//syncmap:go_default_test
+* @org_golang_x_sync//errgroup:errgroup_test
+* @org_golang_x_sync//semaphore:semaphore_test
+* @org_golang_x_sync//singleflight:singleflight_test
+* @org_golang_x_sync//syncmap:syncmap_test
 
 
 org_golang_x_mod

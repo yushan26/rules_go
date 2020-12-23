@@ -48,11 +48,12 @@ POPULAR_REPOS = [
     ),
 
     dict(
+        # This repo is also declared in gazelle_dependencies.
         name = "org_golang_x_sys",
         importpath = "golang.org/x/sys",
         commit = "acbc56fc7007d2a01796d5bde54f39e3b3e95945",
         excludes = [
-            "unix:go_default_test", # TODO(#413): External test depends on symbols defined in internal test.
+            "unix:unix_test", # TODO(#413): External test depends on symbols defined in internal test.
         ],
     ),
 
@@ -269,6 +270,7 @@ def popular_repos_bzl():
       f.write("    _maybe(\n        go_repository,\n")
       for k in ["name", "importpath", "commit", "strip_prefix", "type", "build_file_proto_mode"]:
         if k in repo: f.write('        {} = "{}",\n'.format(k, repo[k]))
+      f.write('        build_naming_convention = "go_default_library",\n')
       for k in ["urls"]:
         if k in repo: f.write('        {} = ["{}"],\n'.format(k, repo[k]))
       f.write("    )\n")
