@@ -251,6 +251,7 @@ func compileArchive(
 				stem = stem[:len(stem)-len(ext)]
 			}
 			coverVar := fmt.Sprintf("Cover_%s_%d_%s", sanitizePathForIdentifier(importPath), i, sanitizePathForIdentifier(stem))
+			coverVar = strings.ReplaceAll(coverVar, "_", "Z")
 			coverSrc := filepath.Join(workDir, fmt.Sprintf("cover_%d.go", i))
 			if err := instrumentForCoverage(goenv, origSrc, srcName, coverVar, coverMode, coverSrc); err != nil {
 				return err
