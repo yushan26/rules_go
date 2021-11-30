@@ -278,14 +278,14 @@ func compileArchive(
 			return err
 		}
 
-		gcFlags = append(gcFlags, "-trimpath="+srcDir)
+		gcFlags = append(gcFlags, createTrimPath(gcFlags, srcDir))
 	} else {
 		if cgoExportHPath != "" {
 			if err := ioutil.WriteFile(cgoExportHPath, nil, 0666); err != nil {
 				return err
 			}
 		}
-		gcFlags = append(gcFlags, "-trimpath=.")
+		gcFlags = append(gcFlags, createTrimPath(gcFlags, "."))
 	}
 
 	// Check that the filtered sources don't import anything outside of
@@ -510,6 +510,16 @@ func runNogo(ctx context.Context, workDir string, nogoPath string, srcs []string
 		}
 	}
 	return nil
+}
+
+func createTrimPath(gcFlags []string, path string) string {
+	for _, flag := range gcFlags {
+		if strings.HasPrefix(flag, "-trimpath=") {
+			return flag + ":" + path
+		}
+	}
+
+	return "-trimpath=" + path
 }
 
 func sanitizePathForIdentifier(path string) string {
