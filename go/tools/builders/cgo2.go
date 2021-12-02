@@ -289,7 +289,7 @@ func defaultCFlags(workDir string) []string {
 	}
 	goos, goarch := os.Getenv("GOOS"), os.Getenv("GOARCH")
 	switch {
-	case goos == "darwin":
+	case goos == "darwin" || goos == "ios":
 		return flags
 	case goos == "windows" && goarch == "amd64":
 		return append(flags, "-mthreads")
@@ -303,7 +303,7 @@ func defaultLdFlags() []string {
 	switch {
 	case goos == "android":
 		return []string{"-llog", "-ldl"}
-	case goos == "darwin":
+	case goos == "darwin" || goos == "ios":
 		return nil
 	case goos == "windows" && goarch == "amd64":
 		return []string{"-mthreads"}
