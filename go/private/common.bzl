@@ -173,31 +173,31 @@ def has_shared_lib_extension(path):
     Matches filenames of shared libraries, with or without a version number extension.
     """
     return (has_simple_shared_lib_extension(path) or
-            has_versioned_shared_lib_extension(path))
+            get_versioned_shared_lib_extension(path))
 
 def has_simple_shared_lib_extension(path):
     """
     Matches filenames of shared libraries, without a version number extension.
     """
-    if any([path.endswith(ext) for ext in SHARED_LIB_EXTENSIONS]):
-        return True
-    return False
+    return any([path.endswith(ext) for ext in SHARED_LIB_EXTENSIONS])
 
-def has_versioned_shared_lib_extension(path):
-    """Returns whether the path appears to be an versioned .so or .dylib file."""
+def get_versioned_shared_lib_extension(path):
+    """If appears to be an versioned .so or .dylib file, return the extension; otherwise empty"""
     parts = path.split("/")[-1].split(".")
     if not parts[-1].isdigit():
-        return False
+        return ""
+
+    # only iterating to 1 because parts[0] has to be the lib name
     for i in range(len(parts) - 1, 0, -1):
         if not parts[i].isdigit():
             if parts[i] == "dylib" or parts[i] == "so":
-                return True
+                return ".".join(parts[i:])
 
-            # somehting like foo.bar.1.2
-            return False
+            # something like foo.bar.1.2 or dylib.1.2
+            return ""
 
     # something like 1.2.3, or so.1.2, or dylib.1.2, or foo.1.2
-    return False
+    return ""
 
 MINIMUM_BAZEL_VERSION = "4.2.0"
 

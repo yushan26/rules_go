@@ -14,8 +14,8 @@
 
 load(
     "//go/private:common.bzl",
+    "get_versioned_shared_lib_extension",
     "has_simple_shared_lib_extension",
-    "has_versioned_shared_lib_extension",
     "hdr_exts",
 )
 load(
@@ -119,25 +119,32 @@ def cgo_configure(go, srcs, cdeps, cppopts, copts, cxxopts, clinkopts):
                 # If both static and dynamic variants are available, Bazel will only give
                 # us the static variant. We'll get one file for each transitive dependency,
                 # so the same file may appear more than once.
-                if (lib.basename.startswith("lib") and
-                    has_simple_shared_lib_extension(lib.basename)):
-                    # If the loader would be able to find the library using rpaths,
-                    # use -L and -l instead of hard coding the path to the library in
-                    # the binary. This gives users more flexibility. The linker will add
-                    # rpaths later. We can't add them here because they are relative to
-                    # the binary location, and we don't know where that is.
-                    libname = lib.basename[len("lib"):lib.basename.rindex(".")]
-                    clinkopts.extend(["-L", lib.dirname, "-l", libname])
-                    inputs_direct.append(lib)
-                elif (lib.basename.startswith("lib") and
-                      has_versioned_shared_lib_extension(lib.basename)):
-                    # With a versioned shared library, we must use the full filename,
-                    # otherwise the library will not be found by the linker.
-                    libname = ":%s" % lib.basename
-                    clinkopts.extend(["-L", lib.dirname, "-l", libname])
-                    inputs_direct.append(lib)
-                else:
-                    lib_opts.append(lib.path)
+                if lib.basename.startswith("lib"):
+                    if has_simple_shared_lib_extension(lib.basename):
+                        # If the loader would be able to find the library using rpaths,
+                        # use -L and -l instead of hard coding the path to the library in
+                        # the binary. This gives users more flexibility. The linker will add
+                        # rpaths later. We can't add them here because they are relative to
+                        # the binary location, and we don't know where that is.
+                        libname = lib.basename[len("lib"):lib.basename.rindex(".")]
+                        clinkopts.extend(["-L", lib.dirname, "-l", libname])
+                        inputs_direct.append(lib)
+                        continue
+                    extension = get_versioned_shared_lib_extension(lib.basename)
+                    if extension.startswith("so"):
+                        # With a versioned .so file, we must use the full filename,
+                        # otherwise the library will not be found by the linker.
+                        libname = ":%s" % lib.basename
+                        clinkopts.extend(["-L", lib.dirname, "-l", libname])
+                        inputs_direct.append(lib)
+                        continue
+                    elif extension.startswith("dylib"):
+                        # A standard versioned dylib is named as libMagick.2.dylib, which is
+                        # treated as a simple shared library. Non-standard versioned dylibs such as
+                        # libclntsh.dylib.12.1, users have to create a unversioned symbolic link,
+                        # so it can be treated as a simple shared library too.
+                        continue
+                lib_opts.append(lib.path)
             clinkopts.extend(cc_link_flags)
 
         elif hasattr(d, "objc"):
