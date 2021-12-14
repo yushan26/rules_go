@@ -10,3 +10,8 @@ go_bazel_test(
     name = "binary_coverage_test",
     srcs = ["binary_coverage_test.go"],
 )
+
+go_bazel_test(
+    name = "issue3017_test",
+    srcs = ["issue3017_test.go"],
+)

@@ -45,7 +45,21 @@ def _transitive_archives_without_test_archives(archive, test_archives):
     # transitively depends on the library under test, we need to exclude the
     # library under test and use the internal test archive instead.
     deps = depset(transitive = [d.transitive for d in archive.direct])
-    return [d for d in deps.to_list() if not any([d.importmap == t.importmap for t in test_archives])]
+    result = []
+    result_by_importmap = dict()
+    for d in deps.to_list():
+        if any([d.importmap == t.importmap for t in test_archives]):
+            continue
+        existing = result_by_importmap.get(d.importmap)
+        if existing:
+            # Issue #3017
+            # This is not expected to happen routinely. Print a warning if it's not coverdata.
+            if d.importmap != "github.com/bazelbuild/rules_go/go/tools/coverdata":
+                print("ignoring {} in favor of {}".format(d.file.path, existing.file.path))
+            continue
+        result.append(d)
+        result_by_importmap[d.importmap] = d
+    return result
 
 def emit_link(
         go,
