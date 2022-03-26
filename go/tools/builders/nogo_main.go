@@ -172,6 +172,21 @@ func checkPackage(analyzers []*analysis.Analyzer, packagePath string, packageFil
 
 	roots := make([]*action, 0, len(analyzers))
 	for _, a := range analyzers {
+		if cfg, ok := configs[a.Name]; ok {
+			for flagKey, flagVal := range cfg.analyzerFlags {
+				if strings.HasPrefix(flagKey, "-") {
+					return "", nil, fmt.Errorf(
+						"%s: flag should not begin with '-': %s", a.Name, flagKey)
+				}
+				if flag := a.Flags.Lookup(flagKey); flag == nil {
+					return "", nil, fmt.Errorf("%s: unrecognized flag: %s", a.Name, flagKey)
+				}
+				if err := a.Flags.Set(flagKey, flagVal); err != nil {
+					return "", nil, fmt.Errorf(
+						"%s: invalid value for flag: %s=%s: %w", a.Name, flagKey, flagVal, err)
+				}
+			}
+		}
 		roots = append(roots, visit(a))
 	}
 
@@ -457,6 +472,11 @@ type config struct {
 	// excludeFiles is a list of regular expressions that match files that an
 	// analyzer will not emit diagnostics for.
 	excludeFiles []*regexp.Regexp
+
+	// analyzerFlags is a map of flag names to flag values which will be passed
+	// to Analyzer.Flags. Note that no leading '-' should be present in a flag
+	// name
+	analyzerFlags map[string]string
 }
 
 // importer is an implementation of go/types.Importer that imports type
