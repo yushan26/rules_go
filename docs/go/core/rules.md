@@ -84,7 +84,9 @@ Introduction
 ------------
 
 Three core rules may be used to build most projects: [go_library], [go_binary],
-and [go_test].
+and [go_test]. These rules reimplement the low level plumping commands of a normal
+'go build' invocation: compiling package's source files to archives, then linking
+archives into go binary.
 
 [go_library] builds a single package. It has a list of source files
 (specified with `srcs`) and may depend on other packages (with `deps`).
@@ -102,6 +104,12 @@ consists of three packages: an internal test package compiled together with
 the library being tested (specified with `embed`), an external test package
 compiled separately, and a generated test main package.
 
+Here is an example of a Bazel build graph for a project using these core rules:
+
+![](./buildgraph.svg)
+
+By instrumenting the lower level go tooling, we can cache smaller, finer 
+artifacts with Bazel and thus, speed up incremental builds.
 
 Rules
 -----
