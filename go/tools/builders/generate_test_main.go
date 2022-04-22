@@ -70,6 +70,7 @@ type Cases struct {
 	Examples    []Example
 	TestMain    string
 	CoverMode   string
+	CoverFormat string
 	Pkgname     string
 }
 
@@ -171,10 +172,16 @@ func main() {
 		}
 	}
 
-  {{if .Version "go1.18"}}
-	m := testing.MainStart(testdeps.TestDeps{}, testsInShard(), benchmarks, fuzzTargets, examples)
+	testDeps :=
+  {{if eq .CoverFormat "lcov"}}
+		bzltestutil.LcovTestDeps{TestDeps: testdeps.TestDeps{}}
   {{else}}
-	m := testing.MainStart(testdeps.TestDeps{}, testsInShard(), benchmarks, examples)
+		testdeps.TestDeps{}
+  {{end}}
+  {{if .Version "go1.18"}}
+	m := testing.MainStart(testDeps, testsInShard(), benchmarks, fuzzTargets, examples)
+  {{else}}
+	m := testing.MainStart(testDeps, testsInShard(), benchmarks, examples)
   {{end}}
 
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
@@ -185,6 +192,12 @@ func main() {
 		flag.Lookup("test.failfast").Value.Set("true")
 	}
 
+	// Setting this flag serves two purposes:
+	// 1. It attains parity with "go test", which enables this feature by default.
+	//    https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/cmd/go/internal/test/test.go;l=1331-1337
+	// 2. It provides a way to run hooks right before testing.M.Run() returns.
+	flag.Lookup("test.paniconexit0").Value.Set("true")
+
 	{{if ne .CoverMode ""}}
 	if len(coverdata.Counters) > 0 {
 		testing.RegisterCover(testing.Cover{
@@ -194,18 +207,23 @@ func main() {
 		})
 
 		if coverageDat, ok := os.LookupEnv("COVERAGE_OUTPUT_FILE"); ok {
+			{{if eq .CoverFormat "lcov"}}
+			flag.Lookup("test.coverprofile").Value.Set(coverageDat+".cover")
+			{{else}}
 			flag.Lookup("test.coverprofile").Value.Set(coverageDat)
+			{{end}}
 		}
 	}
 	{{end}}
 
 	{{if not .TestMain}}
-	os.Exit(m.Run())
+	res := m.Run()
 	{{else}}
 	{{.TestMain}}(m)
 	{{/* See golang.org/issue/34129 and golang.org/cl/219639 */}}
-	os.Exit(int(reflect.ValueOf(m).Elem().FieldByName("exitCode").Int()))
+	res := int(reflect.ValueOf(m).Elem().FieldByName("exitCode").Int())
 	{{end}}
+	os.Exit(res)
 }
 `
 
@@ -221,6 +239,7 @@ func genTestMain(args []string) error {
 	goenv := envFlags(flags)
 	out := flags.String("output", "", "output file to write. Defaults to stdout.")
 	coverMode := flags.String("cover_mode", "", "the coverage mode to use")
+	coverFormat := flags.String("cover_format", "", "the coverage report type to generate (go_cover or lcov)")
 	pkgname := flags.String("pkgname", "", "package name of test")
 	flags.Var(&imports, "import", "Packages to import")
 	flags.Var(&sources, "src", "Sources to process for tests")
@@ -270,8 +289,9 @@ func genTestMain(args []string) error {
 	}
 
 	cases := Cases{
-		CoverMode: *coverMode,
-		Pkgname:   *pkgname,
+		CoverFormat: *coverFormat,
+		CoverMode:   *coverMode,
+		Pkgname:     *pkgname,
 	}
 
 	testFileSet := token.NewFileSet()
