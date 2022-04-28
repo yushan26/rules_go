@@ -135,6 +135,7 @@ bzl_library(
     name = "providers",
     srcs = ["providers.bzl"],
     visibility = [
+        "//extras:__pkg__",
         "//go:__subpackages__",
         "//proto:__pkg__",  # keep
     ],
