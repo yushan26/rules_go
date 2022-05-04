@@ -34,7 +34,9 @@ go_embed_data_dependencies()
 """
 
 def _go_embed_data_impl(ctx):
-    print("Embedding is now better handled by using rules_go's built in https://github.com/bazelbuild/rules_go/blob/master/docs/go/core/embedding.md functionality. The `bindata` rule is deprecated and will be removed in rules_go version 0.35.")
+    print("""\Embedding is now better handled by using rules_go's built in 
+https://github.com/bazelbuild/rules_go/blob/master/docs/go/core/embedding.md functionality.
+The `bindata` rule is deprecated and will be removed in rules_go version 0.35.""")
 
     go = go_context(ctx)
     if ctx.attr.src and ctx.attr.srcs:
