@@ -200,7 +200,7 @@ _go_proto_compiler = rule(
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//proto:protoc",
         ),
         "_go_context_data": attr.label(
             default = "//:go_context_data",
