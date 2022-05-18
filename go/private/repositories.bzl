@@ -138,7 +138,7 @@ def go_rules_dependencies():
         sha256 = "dc4339bd2011a230d81d5ec445361efeb78366f1d30a7757e8fbea3e7221080e",
         # v1.28.0, latest as of 2022-05-09
         urls = [
-            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf-go/archive/v1.28.0.zip",
+            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf-go/archive/refs/tags/v1.28.0.zip",
             "https://github.com/protocolbuffers/protobuf-go/archive/v1.28.0.zip",
         ],
         strip_prefix = "protobuf-go-1.28.0",

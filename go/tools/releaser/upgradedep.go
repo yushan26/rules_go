@@ -348,7 +348,7 @@ func upgradeDepDecl(ctx context.Context, gh *githubClient, workDir, name string,
 			}
 		}
 		if ghURL == "" {
-			ghURL = fmt.Sprintf("https://github.com/%s/%s/archive/%s.zip", orgName, repoName, *highestTag.Name)
+			ghURL = fmt.Sprintf("https://github.com/%s/%s/archive/refs/tags/%s.zip", orgName, repoName, *highestTag.Name)
 			stripPrefix = repoName + "-" + strings.TrimPrefix(*highestTag.Name, "v")
 		}
 		urlComment = fmt.Sprintf("%s, latest as of %s", *highestTag.Name, date)
