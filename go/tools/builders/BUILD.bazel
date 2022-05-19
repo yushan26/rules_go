@@ -23,6 +23,20 @@ go_test(
     ],
 )
 
+go_test(
+    name = "stdliblist_test",
+    size = "small",
+    srcs = [
+        "env.go",
+        "flags.go",
+        "replicate.go",
+        "stdliblist.go",
+        "stdliblist_test.go",
+    ],
+    data = ["@go_sdk//:files"],
+    rundir = ".",
+)
+
 filegroup(
     name = "builder_srcs",
     srcs = [

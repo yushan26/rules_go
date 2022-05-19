@@ -264,6 +264,7 @@ tasks:
     - "-@org_golang_x_text//language:language_test"
     - "-@org_golang_x_tools//cmd/splitdwarf/internal/macho:macho_test"
     - "-@test_chdir_remote//sub:go_default_test"
+    - "-//go/tools/builders:stdliblist_test" # fails on Windows due to #2491
     - "-//tests:buildifier_test" # requires bash
     - "-//tests/core/cgo:dylib_client"
     - "-//tests/core/cgo:dylib_test"
