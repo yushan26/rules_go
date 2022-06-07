@@ -13,8 +13,12 @@
 # limitations under the License.
 
 load(
-    "@io_bazel_rules_go//go/private:context.bzl",  #TODO: This ought to be def
+    "//go/private:context.bzl",  #TODO: This ought to be def
     "go_context",
+)
+load(
+    "//go/private:go_toolchain.bzl",
+    "GO_TOOLCHAIN",
 )
 
 _DOC = """`go_embed_data` generates a .go file that contains data from a file or a
@@ -135,6 +139,6 @@ go_embed_data = rule(
             default = "//:go_context_data",
         ),
     },
-    toolchains = ["@io_bazel_rules_go//go:toolchain"],
+    toolchains = [GO_TOOLCHAIN],
 )
 # See /docs/go/extras/extras.md#go_embed_data for full documentation.
