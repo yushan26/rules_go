@@ -38,9 +38,10 @@ _go_host_sdk = repository_rule(
     environ = ["GOROOT"],
 )
 
-def go_host_sdk(name, **kwargs):
+def go_host_sdk(name, register_toolchains = True, **kwargs):
     _go_host_sdk(name = name, **kwargs)
-    _register_toolchains(name)
+    if register_toolchains:
+        _register_toolchains(name)
 
 def _go_download_sdk_impl(ctx):
     if not ctx.attr.goos and not ctx.attr.goarch:
@@ -125,9 +126,10 @@ _go_download_sdk = repository_rule(
     },
 )
 
-def go_download_sdk(name, **kwargs):
+def go_download_sdk(name, register_toolchains = True, **kwargs):
     _go_download_sdk(name = name, **kwargs)
-    _register_toolchains(name)
+    if register_toolchains:
+        _register_toolchains(name)
 
 def _go_local_sdk_impl(ctx):
     goroot = ctx.attr.path
@@ -142,9 +144,10 @@ _go_local_sdk = repository_rule(
     },
 )
 
-def go_local_sdk(name, **kwargs):
+def go_local_sdk(name, register_toolchains = True, **kwargs):
     _go_local_sdk(name = name, **kwargs)
-    _register_toolchains(name)
+    if register_toolchains:
+        _register_toolchains(name)
 
 def _go_wrap_sdk_impl(ctx):
     if not ctx.attr.root_file and not ctx.attr.root_files:
@@ -178,9 +181,10 @@ _go_wrap_sdk = repository_rule(
     },
 )
 
-def go_wrap_sdk(name, **kwargs):
+def go_wrap_sdk(name, register_toolchains = True, **kwargs):
     _go_wrap_sdk(name = name, **kwargs)
-    _register_toolchains(name)
+    if register_toolchains:
+        _register_toolchains(name)
 
 def _register_toolchains(repo):
     labels = [
@@ -233,7 +237,7 @@ def _sdk_build_file(ctx, platform):
             "{goos}": goos,
             "{goarch}": goarch,
             "{exe}": ".exe" if goos == "windows" else "",
-            "{rules_go_repo_name}": Label("//go/private:BUILD.sdk.bazel").workspace_name,
+            "{rules_go_repo_name}": "io_bazel_rules_go",
         },
     )
 
