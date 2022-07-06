@@ -15,9 +15,6 @@
 package empty_test
 
 import (
-	"errors"
-	"os/exec"
-	"strings"
 	"testing"
 
 	"github.com/bazelbuild/rules_go/go/tools/bazel_testing"
@@ -98,19 +95,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 }
 
 func TestNogoGenEmptyCode(t *testing.T) {
-	out, err := bazel_testing.BazelOutput("build", "-k", "//:simple_test")
-	if err == nil {
-		t.Fatal("test should fail")
+	if out, err := bazel_testing.BazelOutput("build", "-k", "//:simple_test"); err != nil {
+		println(string(out))
+		t.Fatal(err)
 	}
-
-	var eErr *exec.ExitError
-	if errors.As(err, &eErr) &&
-		strings.Contains(string(eErr.Stderr), "Detected generated source code from rules_go") &&
-		strings.Contains(string(eErr.Stderr), "(noempty)") {
-		// Expected failure
-		return
-	}
-
-	println(string(out))
-	t.Fatal(err)
 }

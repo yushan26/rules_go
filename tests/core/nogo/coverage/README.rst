@@ -19,10 +19,5 @@ Verifies `#2146`_.
 
 gen_code_test
 -------------
-Checks how `nogo`_ would interact with source code that was generated as part of
-rules_go's coverage implementation.  Currently `nogo`_ would be run over these
-generated source code, which is not desirable as end-user have very little control
-over how these code were generated.
-
-In a future version, we shall flip this behavior so that `nogo`_ would not run
-over source files that users have no control over.
+Checks how `nogo`_ should not run on source code that was generated as part of
+rules_go's coverage implementation.
