@@ -6,7 +6,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains(version = "1.17")
+go_register_toolchains(version = "1.18.3")
 
 http_archive(
     name = "com_google_protobuf",
@@ -78,10 +78,10 @@ bazel_skylib_workspace()
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "222e49f034ca7a1d1231422cdb67066b885819885c356673cb1f72f748a3c9d4",
+    sha256 = "501deb3d5695ab658e82f6f6f549ba681ea3ca2a5fb7911154b5aa45596183fa",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.22.3/bazel-gazelle-v0.22.3.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.22.3/bazel-gazelle-v0.22.3.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.26.0/bazel-gazelle-v0.26.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.26.0/bazel-gazelle-v0.26.0.tar.gz",
     ],
 )
 
@@ -121,6 +121,18 @@ go_repository(
     sum = "h1:3B43BWw0xEBsLZ/NO1VALz6fppU3481pik+2Ksv45z8=",
     version = "v0.0.0-20210628180205-a41e5a781914",
 )
+
+# TODO(sluongng): Gazelle v0.25.0 switched to static dependency resolution which cause
+# build files generation in external dependencies to wrongly resolve these repositories.
+# We should investigate in Gazelle why this happen and fix it.
+# For now, use manual mapping as a workaround.
+#
+# gazelle:repository go_repository name=org_golang_x_tools   importpath=golang.org/x/tools
+# gazelle:repository go_repository name=org_golang_x_text    importpath=golang.org/x/text
+# gazelle:repository go_repository name=org_golang_x_xerrors importpath=golang.org/x/xerrors
+# gazelle:repository go_repository name=org_golang_x_net     importpath=golang.org/x/net
+# gazelle:repository go_repository name=org_golang_x_sys     importpath=golang.org/x/sys
+# gazelle:repository go_repository name=org_golang_x_crypto  importpath=golang.org/x/crypto
 
 gazelle_dependencies()
 

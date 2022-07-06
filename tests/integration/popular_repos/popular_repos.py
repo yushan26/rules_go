@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -88,8 +88,8 @@ POPULAR_REPOS = [
             "cmd/callgraph/testdata/src/pkg:pkg_test", # is testdata
             "cmd/callgraph:callgraph_test", # Needs testdata directory
             "cmd/cover:cover_test", # Needs testdata directory
-            "cmd/fiximports:fiximports_test", # requires working GOROOT, not present in CI.
             "cmd/file2fuzz:file2fuzz_test", # Requires working GOROOT, uses go build
+            "cmd/fiximports:fiximports_test", # requires working GOROOT, not present in CI.
             "cmd/godoc:godoc_test", # TODO(#417)
             "cmd/gorename:gorename_test", # TODO(#417)
             "cmd/guru/testdata/src/referrers:referrers_test", # Not a real test
@@ -145,6 +145,7 @@ POPULAR_REPOS = [
             "go/analysis/passes/unsafeptr:unsafeptr_test", # Needs testdata directory
             "go/analysis/passes/unusedresult:unusedresult_test", # Needs testdata directory
             "go/analysis/passes/unusedwrite:unusedwrite_test", # Needs testdata directory
+            "go/analysis/passes/usesgenerics:usesgenerics_test", # Needs go tool
             "go/analysis/unitchecker:unitchecker_test", # requires go vet
             "go/ast/inspector:inspector_test", # requires GOROOT and GOPATH
             "go/buildutil:buildutil_test", # Needs testdata directory
@@ -166,6 +167,7 @@ POPULAR_REPOS = [
             "go/ssa/ssautil:ssautil_test", # Needs testdata directory
             "go/ssa:ssa_test", # Needs testdata directory
             "go/types/typeutil:typeutil_test", # requires GOROOT
+            "go/types/objectpath:objectpath_test", # Incomaptible with Go SDK 1.18.3. Fixed in master but not yet released. TODO: fixme
             "godoc/static:static_test", # requires data files
             "godoc/vfs/zipfs:zipfs_test", # requires GOROOT
             "godoc:godoc_test", # requires GOROOT and GOPATH
@@ -174,6 +176,7 @@ POPULAR_REPOS = [
             "internal/imports:imports_test", # Needs testdata directory
             "internal/lsp/analysis/fillreturns:fillreturns_test", # Needs go tool
             "internal/lsp/analysis/fillstruct:fillstruct_test", # Needs go tool
+            "internal/lsp/analysis/infertypeargs:infertypeargs_test", # Needs go tool
             "internal/lsp/analysis/nonewvars:nonewvars_test", # Needs GOROOT
             "internal/lsp/analysis/noresultvalues:noresultvalues_test", # Needs GOROOT
             "internal/lsp/analysis/simplifycompositelit:simplifycompositelit_test", # Needs go tool
@@ -181,6 +184,7 @@ POPULAR_REPOS = [
             "internal/lsp/analysis/simplifyslice:simplifyslice_test", # Needs GOROOT
             "internal/lsp/analysis/undeclaredname:undeclaredname_test", # Needs GOROOT
             "internal/lsp/analysis/unusedparams:unusedparams_test", # Needs go tool
+            "internal/lsp/analysis/useany:useany_test", # Needs go tool
             "internal/lsp/cache:cache_test", # has additional deps
             "internal/lsp/cmd:cmd_test", # panics?
             "internal/lsp/command:command_test", # Needs go tool
@@ -193,7 +197,6 @@ POPULAR_REPOS = [
             "internal/lsp/mod:mod_test", # has additional deps
             "internal/lsp/snippet:snippet_test", # has additional deps
             "internal/lsp/source:source_test", # Needs testdata directory
-            "internal/lsp:lsp_test", # Needs testdata directory
             "internal/lsp/testdata/analyzer:analyzer_test", # is testdata
             "internal/lsp/testdata/codelens:codelens_test", # is testdata
             "internal/lsp/testdata/godef/a:a_test", # is testdata
@@ -202,10 +205,12 @@ POPULAR_REPOS = [
             "internal/lsp/testdata/rename/testy:testy_test", # is testdata
             "internal/lsp/testdata/semantic:semantic_test", # is testdata
             "internal/lsp/testdata/signature:signature_test", # is testdata
+            "internal/lsp/testdata/statements:statements_test", # is testdata
             "internal/lsp/testdata/testy:testy_test", # is testdata
             "internal/lsp/testdata/unimported:unimported_test", # is testdata
             "internal/lsp/testdata/workspacesymbol/a:a_test", # is testdata
-            "internal/lsp/testdata/statements:statements_test", # is testdata
+            "internal/lsp:lsp_test", # Needs testdata directory
+            "internal/typeparams:typeparams_test", # Needs go tool
             "present:present_test", # Needs goldmark
             "refactor/eg:eg_test", # Needs testdata directory
             "refactor/importgraph:importgraph_test", # TODO(#417)
