@@ -258,53 +258,17 @@ def _sdk_build_file(ctx, platform, version):
     )
 
 def _detect_host_platform(ctx):
-    if ctx.os.name == "linux":
-        goos, goarch = "linux", "amd64"
-        res = ctx.execute(["uname", "-p"])
-        if res.return_code == 0:
-            uname = res.stdout.strip()
-            if uname == "s390x":
-                goarch = "s390x"
-            elif uname == "i686":
-                goarch = "386"
-
-        # uname -p is not working on Aarch64 boards
-        # or for ppc64le on some distros
-        res = ctx.execute(["uname", "-m"])
-        if res.return_code == 0:
-            uname = res.stdout.strip()
-            if uname == "aarch64":
-                goarch = "arm64"
-            elif uname == "armv6l":
-                goarch = "arm"
-            elif uname == "armv7l":
-                goarch = "arm"
-            elif uname == "ppc64le":
-                goarch = "ppc64le"
-
-        # Default to amd64 when uname doesn't return a known value.
-
-    elif ctx.os.name == "mac os x":
-        goos, goarch = "darwin", "amd64"
-
-        res = ctx.execute(["uname", "-m"])
-        if res.return_code == 0:
-            uname = res.stdout.strip()
-            if uname == "arm64":
-                goarch = "arm64"
-
-        # Default to amd64 when uname doesn't return a known value.
-
-    elif ctx.os.name.startswith("windows"):
+    goos = ctx.os.name
+    if goos == "mac os x":
+        goos = "darwin"
+    elif goos.startswith("windows"):
         goos = "windows"
-        if ctx.os.environ.get("PROCESSOR_ARCHITECTURE") == "ARM64" or ctx.os.environ.get("PROCESSOR_ARCHITEW6432") == "ARM64":
-            goarch = "arm64"
-        else:
-            goarch = "amd64"
-    elif ctx.os.name == "freebsd":
-        goos, goarch = "freebsd", "amd64"
-    else:
-        fail("Unsupported operating system: " + ctx.os.name)
+
+    goarch = ctx.os.arch
+    if goarch == "aarch64":
+        goarch = "arm64"
+    elif goarch == "x86_64":
+        goarch = "amd64"
 
     return goos, goarch
 
