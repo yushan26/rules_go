@@ -303,6 +303,15 @@ def _detect_sdk_platform(ctx, goroot):
     return platforms[0]
 
 def _detect_sdk_version(ctx, goroot):
+    version_file_path = goroot + "/VERSION"
+    if ctx.path(version_file_path).exists:
+        version_contents = ctx.read(version_file_path)
+
+        # VERSION file has version prefixed by go, eg. go1.18.3
+        return version_contents[2:]
+
+    # The top-level VERSION file does not exist in all Go SDK distributions, e.g. those shipped by Debian or Fedora.
+    # Falling back to running "go version"
     go_binary_path = goroot + "/bin/go"
     result = ctx.execute([go_binary_path, "version"])
     if result.return_code != 0:
