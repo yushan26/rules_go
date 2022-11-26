@@ -45,7 +45,20 @@ def _transitive_archives_without_test_archives(archive, test_archives):
     # transitively depends on the library under test, we need to exclude the
     # library under test and use the internal test archive instead.
     deps = depset(transitive = [d.transitive for d in archive.direct])
-    return [d for d in deps.to_list() if not any([d.importmap == t.importmap for t in test_archives])]
+    result = {}
+
+    # Unfortunately, Starlark doesn't support set()
+    test_imports = {}
+    for t in test_archives:
+        test_imports[t.importmap] = True
+    for d in deps.to_list():
+        if d.importmap in test_imports:
+            continue
+        if d.importmap in result:
+            print("Multiple copies of {} passed to the linker. Ignoring {} in favor of {}".format(d.importmap, d.file.path, result[d.importmap].file.path))
+            continue
+        result[d.importmap] = d
+    return result.values()
 
 def emit_link(
         go,
