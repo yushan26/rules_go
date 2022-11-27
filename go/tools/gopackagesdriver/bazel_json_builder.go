@@ -16,10 +16,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 type BazelJSONBuilder struct {
@@ -47,6 +49,30 @@ func (b *BazelJSONBuilder) fileQuery(filename string) string {
 		// library this file is part of.
 		matches = append(matches[:2], matches[3:]...)
 		label = fmt.Sprintf("@%s//%s", matches[1], strings.Join(matches[2:], ":"))
+	}
+
+	relToBin, err := filepath.Rel(b.bazel.info["output_path"], filename)
+	if err == nil && !strings.HasPrefix(relToBin, "../") {
+		parts := strings.SplitN(relToBin, string(filepath.Separator), 3)
+		relToBin = parts[2]
+		// We've effectively converted filename from bazel-bin/some/path.go to some/path.go;
+		// Check if a BUILD.bazel files exists under this dir, if not walk up and repeat.
+		relToBin = filepath.Dir(relToBin)
+		_, err = os.Stat(filepath.Join(b.bazel.WorkspaceRoot(), relToBin, "BUILD.bazel"))
+		for errors.Is(err, os.ErrNotExist) && relToBin != "." {
+			relToBin = filepath.Dir(relToBin)
+			_, err = os.Stat(filepath.Join(b.bazel.WorkspaceRoot(), relToBin, "BUILD.bazel"))
+		}
+
+		if err == nil {
+			// return package path found and build all targets (codegen doesn't fall under go_library)
+			// Otherwise fallback to default
+			if relToBin == "." {
+				relToBin = ""
+			}
+			label = fmt.Sprintf("//%s:all", relToBin)
+			additionalKinds = append(additionalKinds, "go_.*")
+		}
 	}
 
 	kinds := append(_defaultKinds, additionalKinds...)
