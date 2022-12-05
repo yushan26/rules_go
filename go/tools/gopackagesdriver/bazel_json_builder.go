@@ -15,9 +15,11 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -166,7 +168,31 @@ func (b *BazelJSONBuilder) Build(ctx context.Context, mode LoadMode) ([]string, 
 		"--aspects=" + strings.Join(aspects, ","),
 		"--output_groups=" + b.outputGroupsForMode(mode),
 		"--keep_going", // Build all possible packages
-	}, bazelBuildFlags, labels)
+	}, bazelBuildFlags)
+
+	if len(labels) < 100 {
+		buildArgs = append(buildArgs, labels...)
+	} else {
+		// To avoid hitting MAX_ARGS length, write labels to a file and use `--target_pattern_file`
+		targetsFile, err := ioutil.TempFile("", "gopackagesdriver_targets_")
+		if err != nil {
+			return nil, fmt.Errorf("unable to create target pattern file: %w", err)
+		}
+		writer := bufio.NewWriter(targetsFile)
+		defer writer.Flush()
+		for _, l := range labels {
+			writer.WriteString(l+"\n")
+		}
+		if err := writer.Flush(); err != nil {
+			return nil, fmt.Errorf("unable to flush data to target pattern file: %w", err)
+		}
+		defer func() {
+			targetsFile.Close()
+			os.Remove(targetsFile.Name())
+		}()
+
+		buildArgs = append(buildArgs, "--target_pattern_file="+targetsFile.Name())
+	}
 	files, err := b.bazel.Build(ctx, buildArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to bazel build %v: %w", buildArgs, err)
