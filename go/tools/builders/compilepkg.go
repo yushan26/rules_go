@@ -51,6 +51,7 @@ func compilePkg(args []string) error {
 	goenv := envFlags(fs)
 	var unfilteredSrcs, coverSrcs, embedSrcs, embedLookupDirs, embedRoots multiFlag
 	var deps archiveMultiFlag
+	var recompileInternalDeps archiveMultiFlag
 	var importPath, packagePath, nogoPath, packageListPath, coverMode string
 	var outPath, outFactsPath, cgoExportHPath string
 	var testFilter string
@@ -82,6 +83,7 @@ func compilePkg(args []string) error {
 	fs.StringVar(&cgoExportHPath, "cgoexport", "", "The _cgo_exports.h file to write")
 	fs.StringVar(&testFilter, "testfilter", "off", "Controls test package filtering")
 	fs.StringVar(&coverFormat, "cover_format", "", "Emit source file paths in coverage instrumentation suitable for the specified coverage format")
+	fs.Var(&recompileInternalDeps, "recompile_internal_deps", "Import path, package path, and file name of a direct dependency that needs to be recompiled, separated by '='.")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -162,7 +164,8 @@ func compilePkg(args []string) error {
 		outPath,
 		outFactsPath,
 		cgoExportHPath,
-		coverFormat)
+		coverFormat,
+		recompileInternalDeps)
 }
 
 func compileArchive(
@@ -192,6 +195,7 @@ func compileArchive(
 	outXPath string,
 	cgoExportHPath string,
 	coverFormat string,
+	recompileInternalDeps []archive,
 ) error {
 	workDir, cleanup, err := goenv.workDir()
 	if err != nil {
@@ -349,7 +353,7 @@ func compileArchive(
 
 	// Check that the filtered sources don't import anything outside of
 	// the standard library and the direct dependencies.
-	imports, err := checkImports(srcs.goSrcs, deps, packageListPath)
+	imports, err := checkImports(srcs.goSrcs, deps, recompileInternalDeps, packageListPath, importPath)
 	if err != nil {
 		return err
 	}
