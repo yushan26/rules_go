@@ -593,6 +593,7 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
     internal_source = internal_archive.source
 
     internal_deps = []
+
     # Pass internal dependencies that need to be recompiled down to the builder to check if the internal archive
     # tries to import any of the dependencies. If there is, that means that there is a dependency cycle.
     need_recompile_deps = []
