@@ -63,9 +63,6 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
     out_cgo_export_h = None  # set if cgo used in c-shared or c-archive mode
 
     direct = [get_archive(dep) for dep in source.deps]
-    internal_deps = []
-    if recompile_internal_deps:
-        internal_deps = [get_archive(dep) for dep in recompile_internal_deps]
     runfiles = source.runfiles
     data_files = runfiles.files
 
@@ -135,7 +132,7 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
             gc_goopts = source.gc_goopts,
             cgo = False,
             testfilter = testfilter,
-            recompile_internal_deps = internal_deps,
+            recompile_internal_deps = recompile_internal_deps,
         )
 
     data = GoArchiveData(

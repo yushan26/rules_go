@@ -592,15 +592,17 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
     # can't import anything that imports itself.
     internal_source = internal_archive.source
 
+    internal_deps = []
     # Pass internal dependencies that need to be recompiled down to the builder to check if the internal archive
     # tries to import any of the dependencies. If there is, that means that there is a dependency cycle.
-    internal_deps = []
     need_recompile_deps = []
     for dep in internal_source.deps:
-        if not need_recompile[get_archive(dep).data.label]:
+        dep_data = get_archive(dep).data
+        if not need_recompile[dep_data.label]:
             internal_deps.append(dep)
         else:
-            need_recompile_deps.append(dep)
+            need_recompile_deps.append(dep_data.importpath)
+
     x_defs = dict(internal_source.x_defs)
     x_defs.update(internal_archive.x_defs)
     attrs = structs.to_dict(internal_source)
