@@ -37,43 +37,23 @@ load(
     "platform_from_crosstool",
 )
 
-def filter_transition_label(label):
-    """Transforms transition labels for the current workspace.
-
-    This works around bazelbuild/bazel#10499 by automatically using the correct
-    way to refer to this repository (@io_bazel_rules_go from another workspace,
-    but only repo-relative labels if this repository is the main workspace).
-    """
-    if label.startswith("//command_line_option:"):
-        # This is a special prefix that allows transitions to access the values
-        # of native command-line flags. It is not a valid package, but just a
-        # syntactic prefix that is consumed by the transition logic, and thus
-        # must not be passed through the Label constructor.
-        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/analysis/config/StarlarkDefinedConfigTransition.java;l=62;drc=463e8c80cd11d36777ddf80543aea7c53293f298
-        return label
-    else:
-        return str(Label(label))
-
 # A list of rules_go settings that are possibly set by go_transition.
 # Keep their package name in sync with the implementation of
 # _original_setting_key.
 TRANSITIONED_GO_SETTING_KEYS = [
-    filter_transition_label(key)
-    for key in [
-        "//go/config:static",
-        "//go/config:msan",
-        "//go/config:race",
-        "//go/config:pure",
-        "//go/config:linkmode",
-        "//go/config:tags",
-    ]
+    "//go/config:static",
+    "//go/config:msan",
+    "//go/config:race",
+    "//go/config:pure",
+    "//go/config:linkmode",
+    "//go/config:tags",
 ]
 
 def _original_setting_key(key):
     if not "//go/config:" in key:
         fail("_original_setting_key currently assumes that all Go settings live under //go/config, got: " + key)
     name = key.split(":")[1]
-    return filter_transition_label("//go/private/rules:original_" + name)
+    return "//go/private/rules:original_" + name
 
 _SETTING_KEY_TO_ORIGINAL_SETTING_KEY = {
     setting: _original_setting_key(setting)
@@ -100,17 +80,17 @@ def _go_transition_impl(settings, attr):
         if pure == "on":
             fail('race = "on" cannot be set when pure = "on" is set. race requires cgo.')
         pure = "off"
-        settings[filter_transition_label("@io_bazel_rules_go//go/config:pure")] = False
+        settings["//go/config:pure"] = False
     if msan == "on":
         if pure == "on":
             fail('msan = "on" cannot be set when msan = "on" is set. msan requires cgo.')
         pure = "off"
-        settings[filter_transition_label("@io_bazel_rules_go//go/config:pure")] = False
+        settings["//go/config:pure"] = False
     if pure == "on":
         race = "off"
-        settings[filter_transition_label("@io_bazel_rules_go//go/config:race")] = False
+        settings["//go/config:race"] = False
         msan = "off"
-        settings[filter_transition_label("@io_bazel_rules_go//go/config:msan")] = False
+        settings["//go/config:msan"] = False
     cgo = pure == "off"
 
     goos = getattr(attr, "goos", "auto")
@@ -137,14 +117,14 @@ def _go_transition_impl(settings, attr):
 
     tags = getattr(attr, "gotags", [])
     if tags:
-        tags_label = filter_transition_label("@io_bazel_rules_go//go/config:tags")
+        tags_label = "//go/config:tags"
         settings[tags_label] = tags
 
     linkmode = getattr(attr, "linkmode", "auto")
     if linkmode != "auto":
         if linkmode not in LINKMODES:
             fail("linkmode: invalid mode {}; want one of {}".format(linkmode, ", ".join(LINKMODES)))
-        linkmode_label = filter_transition_label("@io_bazel_rules_go//go/config:linkmode")
+        linkmode_label = "//go/config:linkmode"
         settings[linkmode_label] = linkmode
 
     for key, original_key in _SETTING_KEY_TO_ORIGINAL_SETTING_KEY.items():
@@ -179,52 +159,50 @@ def _request_nogo_transition(settings, _attr):
     request_nogo to be true to provide the project configured nogo.
     """
     settings = dict(settings)
-    settings[filter_transition_label("@io_bazel_rules_go//go/private:request_nogo")] = True
+    settings["//go/private:request_nogo"] = True
     return settings
 
 request_nogo_transition = transition(
     implementation = _request_nogo_transition,
     inputs = [],
-    outputs = [filter_transition_label(label) for label in [
-        "@io_bazel_rules_go//go/private:request_nogo",
-    ]],
+    outputs = ["//go/private:request_nogo"],
 )
 
 go_transition = transition(
     implementation = _go_transition_impl,
-    inputs = [filter_transition_label(label) for label in [
+    inputs = [
         "//command_line_option:cpu",
         "//command_line_option:crosstool_top",
         "//command_line_option:platforms",
-    ] + TRANSITIONED_GO_SETTING_KEYS],
-    outputs = [filter_transition_label(label) for label in [
+    ] + TRANSITIONED_GO_SETTING_KEYS,
+    outputs = [
         "//command_line_option:platforms",
-    ] + TRANSITIONED_GO_SETTING_KEYS + _SETTING_KEY_TO_ORIGINAL_SETTING_KEY.values()],
+    ] + TRANSITIONED_GO_SETTING_KEYS + _SETTING_KEY_TO_ORIGINAL_SETTING_KEY.values(),
 )
 
 _common_reset_transition_dict = dict({
-    "@io_bazel_rules_go//go/private:request_nogo": False,
-    "@io_bazel_rules_go//go/config:static": False,
-    "@io_bazel_rules_go//go/config:msan": False,
-    "@io_bazel_rules_go//go/config:race": False,
-    "@io_bazel_rules_go//go/config:pure": False,
-    "@io_bazel_rules_go//go/config:strip": False,
-    "@io_bazel_rules_go//go/config:debug": False,
-    "@io_bazel_rules_go//go/config:linkmode": LINKMODE_NORMAL,
-    "@io_bazel_rules_go//go/config:tags": [],
+    "//go/private:request_nogo": False,
+    "//go/config:static": False,
+    "//go/config:msan": False,
+    "//go/config:race": False,
+    "//go/config:pure": False,
+    "//go/config:strip": False,
+    "//go/config:debug": False,
+    "//go/config:linkmode": LINKMODE_NORMAL,
+    "//go/config:tags": [],
 }, **{setting: "" for setting in _SETTING_KEY_TO_ORIGINAL_SETTING_KEY.values()})
 
 _reset_transition_dict = dict(_common_reset_transition_dict, **{
-    "@io_bazel_rules_go//go/private:bootstrap_nogo": True,
+    "//go/private:bootstrap_nogo": True,
 })
 
-_reset_transition_keys = sorted([filter_transition_label(label) for label in _reset_transition_dict.keys()])
+_reset_transition_keys = sorted(_reset_transition_dict.keys())
 
 _stdlib_keep_keys = sorted([
-    "@io_bazel_rules_go//go/config:msan",
-    "@io_bazel_rules_go//go/config:race",
-    "@io_bazel_rules_go//go/config:pure",
-    "@io_bazel_rules_go//go/config:linkmode",
+    "//go/config:msan",
+    "//go/config:race",
+    "//go/config:pure",
+    "//go/config:linkmode",
 ])
 
 def _go_tool_transition_impl(settings, _attr):
@@ -239,10 +217,7 @@ def _go_tool_transition_impl(settings, _attr):
     have `cfg = "exec"` so tool binaries should be built for the execution
     platform.
     """
-    settings = dict(settings)
-    for label, value in _reset_transition_dict.items():
-        settings[filter_transition_label(label)] = value
-    return settings
+    return dict(settings, **_reset_transition_dict)
 
 go_tool_transition = transition(
     implementation = _go_tool_transition_impl,
@@ -262,10 +237,8 @@ def _non_go_tool_transition_impl(settings, _attr):
     Examples: This transition is applied to attributes referencing proto_library
     targets or protoc directly.
     """
-    settings = dict(settings)
-    for label, value in _reset_transition_dict.items():
-        settings[filter_transition_label(label)] = value
-    settings[filter_transition_label("@io_bazel_rules_go//go/private:bootstrap_nogo")] = False
+    settings = dict(settings, **_reset_transition_dict)
+    settings["//go/private:bootstrap_nogo"] = False
     return settings
 
 non_go_tool_transition = transition(
@@ -285,8 +258,8 @@ def _go_stdlib_transition_impl(settings, _attr):
     settings = dict(settings)
     for label, value in _reset_transition_dict.items():
         if label not in _stdlib_keep_keys:
-            settings[filter_transition_label(label)] = value
-    settings[filter_transition_label("@io_bazel_rules_go//go/private:bootstrap_nogo")] = False
+            settings[label] = value
+    settings["//go/private:bootstrap_nogo"] = False
     return settings
 
 go_stdlib_transition = transition(
@@ -426,11 +399,11 @@ def _set_ternary(settings, attr, name):
     value = getattr(attr, name, "auto")
     _check_ternary(name, value)
     if value != "auto":
-        label = filter_transition_label("@io_bazel_rules_go//go/config:{}".format(name))
+        label = "//go/config:{}".format(name)
         settings[label] = value == "on"
     return value
 
-_SDK_VERSION_BUILD_SETTING = filter_transition_label("@io_bazel_rules_go//go/toolchain:sdk_version")
+_SDK_VERSION_BUILD_SETTING = "//go/toolchain:sdk_version"
 TRANSITIONED_GO_CROSS_SETTING_KEYS = [
     _SDK_VERSION_BUILD_SETTING,
     "//command_line_option:platforms",
