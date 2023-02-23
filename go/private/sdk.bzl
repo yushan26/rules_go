@@ -20,10 +20,6 @@ load(
     "//go/private:nogo.bzl",
     "go_register_nogo",
 )
-load(
-    "//go/private:platforms.bzl",
-    "generate_toolchain_names",
-)
 
 MIN_SUPPORTED_VERSION = (1, 14, 0)
 
@@ -196,7 +192,6 @@ def _go_toolchains_impl(ctx):
             "{goarch}": goarch,
             "{sdk_repo}": sdk_repo,
             "{sdk_type}": sdk_type,
-            "{rules_go_repo_name}": "io_bazel_rules_go",
             "{version_constants}": version_constants,
         },
     )
@@ -307,11 +302,7 @@ def go_wrap_sdk(name, register_toolchains = True, **kwargs):
         _register_toolchains(name)
 
 def _register_toolchains(repo):
-    labels = [
-        "@{}_toolchains//:{}".format(repo, name)
-        for name in generate_toolchain_names()
-    ]
-    native.register_toolchains(*labels)
+    native.register_toolchains("@{}_toolchains//:all".format(repo))
 
 def _remote_sdk(ctx, urls, strip_prefix, sha256):
     if len(urls) == 0:
@@ -366,7 +357,6 @@ def _sdk_build_file(ctx, platform, version, experiments):
             "{goos}": goos,
             "{goarch}": goarch,
             "{exe}": ".exe" if goos == "windows" else "",
-            "{rules_go_repo_name}": "io_bazel_rules_go",
             "{version}": version,
             "{experiments}": repr(experiments),
         },

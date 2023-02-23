@@ -178,7 +178,3 @@ def _generate_platforms():
     return platforms
 
 PLATFORMS = _generate_platforms()
-
-def generate_toolchain_names():
-    # keep in sync with declare_toolchains
-    return ["go_" + p.name for p in PLATFORMS if not p.cgo]

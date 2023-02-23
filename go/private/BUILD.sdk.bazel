@@ -1,8 +1,8 @@
-load("@{rules_go_repo_name}//go/private/rules:binary.bzl", "go_tool_binary")
-load("@{rules_go_repo_name}//go/private/rules:sdk.bzl", "package_list")
-load("@{rules_go_repo_name}//go/private/rules:transition.bzl", "non_go_reset_target")
-load("@{rules_go_repo_name}//go/private:go_toolchain.bzl", "declare_go_toolchains")
-load("@{rules_go_repo_name}//go:def.bzl", "go_sdk")
+load("@io_bazel_rules_go//go/private/rules:binary.bzl", "go_tool_binary")
+load("@io_bazel_rules_go//go/private/rules:sdk.bzl", "package_list")
+load("@io_bazel_rules_go//go/private/rules:transition.bzl", "non_go_reset_target")
+load("@io_bazel_rules_go//go/private:go_toolchain.bzl", "declare_go_toolchains")
+load("@io_bazel_rules_go//go:def.bzl", "go_sdk")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -50,7 +50,7 @@ go_sdk(
 
 go_tool_binary(
     name = "builder",
-    srcs = ["@{rules_go_repo_name}//go/tools/builders:builder_srcs"],
+    srcs = ["@io_bazel_rules_go//go/tools/builders:builder_srcs"],
     sdk = ":go_sdk",
 )
 

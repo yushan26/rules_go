@@ -66,6 +66,7 @@ bzl_library(
         "//go/private/actions:binary",
         "//go/private/actions:link",
         "//go/private/actions:stdlib",
+        "@bazel_skylib//lib:selects",
     ],
 )
 
