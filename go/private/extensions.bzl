@@ -16,12 +16,18 @@ _download_tag = tag_class(
 _host_tag = tag_class(
     attrs = {
         "name": attr.string(mandatory = True),
+        "version": attr.string(),
     },
 )
 
 def _go_sdk_impl(ctx):
-    for mod in ctx.modules:
-        for download_tag in mod.tags.download:
+    for module in ctx.modules:
+        for download_tag in module.tags.download:
+            # SDKs without an explicit version are fetched even when not selected by toolchain
+            # resolution. This is acceptable if brought in by the root module, but transitive
+            # dependencies should not slow down the build in this way.
+            if not module.is_root and not download_tag.version:
+                fail("go_sdk.download: version must be specified in non-root module " + module.name)
             go_download_sdk(
                 name = download_tag.name,
                 goos = download_tag.goos,
@@ -31,9 +37,15 @@ def _go_sdk_impl(ctx):
                 version = download_tag.version,
                 register_toolchains = False,
             )
-        for host_tag in mod.tags.host:
+        for host_tag in module.tags.host:
+            # Dependencies can rely on rules_go providing a default remote SDK. They can also
+            # configure a specific version of the SDK to use. However, they should not add a
+            # dependency on the host's Go SDK.
+            if not module.is_root:
+                fail("go_sdk.host: cannot be used in non-root module " + module.name)
             go_host_sdk(
                 name = host_tag.name,
+                version = host_tag.version,
                 register_toolchains = False,
             )
 
