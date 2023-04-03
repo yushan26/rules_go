@@ -22,6 +22,7 @@ load(
     "extldflags_from_cc_toolchain",
     "link_mode_args",
 )
+load("//go/private:sdk.bzl", "parse_version")
 
 def emit_stdlib(go):
     """Returns a standard library for the target configuration.
@@ -44,13 +45,16 @@ def _stdlib_library_to_source(go, _attr, source, _merge):
         source["stdlib"] = _build_stdlib(go)
 
 def _should_use_sdk_stdlib(go):
+    version = parse_version(go.sdk.version)
+    if version and version[0] <= 1 and version[1] <= 19 and go.sdk.experiments:
+        # The precompiled stdlib shipped with 1.19 or below doesn't have experiments
+        return False
     return (go.sdk.libs and  # go.sdk.libs is non-empty if sdk ships with precompiled .a files
             go.mode.goos == go.sdk.goos and
             go.mode.goarch == go.sdk.goarch and
             not go.mode.race and  # TODO(jayconrod): use precompiled race
             not go.mode.msan and
             not go.mode.pure and
-            not go.sdk.experiments and
             go.mode.link == LINKMODE_NORMAL)
 
 def _build_stdlib_list_json(go):
