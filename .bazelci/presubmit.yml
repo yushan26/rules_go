@@ -27,6 +27,21 @@ tasks:
       - "//..."
     test_targets:
       - "//..."
+  debian11_zig_cc:
+    platform: debian11
+    shell_commands:
+      - tests/core/cgo/generate_imported_dylib.sh
+    build_flags:
+      - "--config=incompatible"
+      - "--extra_toolchains=@zig_sdk//toolchain:linux_amd64_gnu.2.31"
+    test_flags:
+      - "--config=incompatible"
+      - "--extra_toolchains=@zig_sdk//toolchain:linux_amd64_gnu.2.31"
+      - "--test_env=ZIG_CC=1"
+    build_targets:
+      - "//..."
+    test_targets:
+      - "//..."
   bcr_tests:
     name: BCR test module
     platform: ${{ platform }}
