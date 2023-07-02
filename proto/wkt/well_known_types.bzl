@@ -1,5 +1,3 @@
-_go_proto_library_suffix = "go_proto"
-
 # NOTE: since protobuf 3.14, the WKTs no longer use these paths. They're only
 # used by gogo below. Not clear if that actually works or if we should
 # continue supporting gogo.
@@ -29,8 +27,18 @@ GOGO_WELL_KNOWN_TYPE_REMAPS = [
 
 # NOTE: only used by gogo.
 WELL_KNOWN_TYPE_RULES = {
-    wkt: Label("//proto/wkt:{}_{}".format(wkt, _go_proto_library_suffix))
-    for wkt in WELL_KNOWN_TYPE_PACKAGES.keys()
+    "any": "@com_github_golang_protobuf//ptypes/any",
+    "api": "@org_golang_google_genproto//protobuf/api",
+    "compiler_plugin": "@com_github_golang_protobuf//protoc-gen-go/plugin",
+    "descriptor": "@com_github_golang_protobuf//protoc-gen-go/descriptor",
+    "duration": "@com_github_golang_protobuf//ptypes/duration",
+    "empty": "@com_github_golang_protobuf//ptypes/empty",
+    "field_mask": "@org_golang_google_genproto//protobuf/field_mask",
+    "source_context": "@org_golang_google_genproto//protobuf/source_context",
+    "struct": "@com_github_golang_protobuf//ptypes/struct",
+    "timestamp": "@com_github_golang_protobuf//ptypes/timestamp",
+    "type": "@org_golang_google_genproto//protobuf/ptype",
+    "wrappers": "@com_github_golang_protobuf//ptypes/wrappers",
 }
 
 PROTO_RUNTIME_DEPS = [
