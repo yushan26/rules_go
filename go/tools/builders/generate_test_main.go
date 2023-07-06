@@ -99,6 +99,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 {{if .TestMain}}
 	"reflect"
 {{end}}
