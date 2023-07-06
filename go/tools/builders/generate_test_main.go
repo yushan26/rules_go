@@ -99,11 +99,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 {{if .TestMain}}
 	"reflect"
 {{end}}
 	"strconv"
+	"strings"
 	"testing"
 	"testing/internal/testdeps"
 
