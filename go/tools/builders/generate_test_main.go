@@ -103,7 +103,6 @@ import (
 	"reflect"
 {{end}}
 	"strconv"
-	"strings"
 	"testing"
 	"testing/internal/testdeps"
 
@@ -191,7 +190,7 @@ func main() {
   {{end}}
 
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
-		if strings.HasPrefix(filter, "-") {
+		if filter[0:1] == "-" {
 			flag.Lookup("test.skip").Value.Set(filter[1:])
 		} else {
 			flag.Lookup("test.run").Value.Set(filter)
