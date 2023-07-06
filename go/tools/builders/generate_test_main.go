@@ -190,7 +190,11 @@ func main() {
   {{end}}
 
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
-		flag.Lookup("test.run").Value.Set(filter)
+		if strings.HasPrefix(filter, "-") {
+			flag.Lookup("test.skip").Value.Set(filter[1:])
+		} else {
+			flag.Lookup("test.run").Value.Set(filter)
+		}
 	}
 
 	if failfast := os.Getenv("TESTBRIDGE_TEST_RUNNER_FAIL_FAST"); failfast != "" {
