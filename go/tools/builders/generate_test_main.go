@@ -189,6 +189,7 @@ func main() {
   {{else}}
 	m := testing.MainStart(testDeps, testsInShard(), benchmarks, examples)
   {{end}}
+
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
 		filters := strings.Split(filter, ",")
 		var runTests []string
