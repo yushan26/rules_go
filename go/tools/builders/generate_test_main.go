@@ -103,6 +103,7 @@ import (
 	"reflect"
 {{end}}
 	"strconv"
+	"strings"
 	"testing"
 	"testing/internal/testdeps"
 
@@ -190,7 +191,23 @@ func main() {
   {{end}}
 
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
-		flag.Lookup("test.run").Value.Set(filter)
+		filters := strings.Split(filter, ",")
+		var runTests []string
+		var skipTests []string
+
+		for _, f := range filters {
+			if strings.HasPrefix(f, "-") {
+				skipTests = append(skipTests, f[1:])
+			} else {
+				runTests = append(runTests, f)
+			}
+		}
+		if len(runTests) > 0 {
+			flag.Lookup("test.run").Value.Set(strings.Join(runTests, "|"))
+		}
+		if len(skipTests) > 0 {
+			flag.Lookup("test.skip").Value.Set(strings.Join(skipTests, "|"))
+		}
 	}
 
 	if failfast := os.Getenv("TESTBRIDGE_TEST_RUNNER_FAIL_FAST"); failfast != "" {
