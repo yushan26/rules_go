@@ -189,11 +189,11 @@ func main() {
   {{else}}
 	m := testing.MainStart(testDeps, testsInShard(), benchmarks, examples)
   {{end}}
-
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
 		filters := strings.Split(filter, ",")
 		var runTests []string
 		var skipTests []string
+
 		for _, f := range filters {
 			if strings.HasPrefix(f, "-") {
 				skipTests = append(skipTests, f[1:])
@@ -413,6 +413,7 @@ func genTestMain(args []string) error {
 			}
 		}
 	}
+
 	for name := range importMap {
 		// Set the names for all unused imports to "_"
 		if !pkgs[name] {

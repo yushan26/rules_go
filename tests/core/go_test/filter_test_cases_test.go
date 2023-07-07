@@ -17,45 +17,15 @@ func TestMain(m *testing.M) {
 load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
 go_test(
-    name = "skip_tests",
-    srcs = ["skip_tests_test.go"],
-	env = {"TESTBRIDGE_TEST_ONLY":"-^TestFoo$,-^TestBaz$"},
+	name = "filter_test",
+	srcs = ["filter_test.go"],
 )
-
-go_test(
-	name = "run_only",
-	srcs = ["run_only_test.go"],
-	env = {"TESTBRIDGE_TEST_ONLY":"^TestBar.+"},
-)
-
-go_test(
-	name = "filter_tests",
-	srcs = ["filter_tests_test.go"],
-	env = {"TESTBRIDGE_TEST_ONLY":"^TestTask.+,-^TestTaskB$"},
-)
--- skip_tests_test.go --
+-- filter_test.go --
 package filter_test_cases
 
 import "testing"
 
 func TestFoo(t *testing.T) {}
-func TestBar(t *testing.T) {}
-func TestBaz(t *testing.T) {}
-
--- run_only_test.go --
-package filter_test_cases
-
-import "testing"
-
-func TestFooA(t *testing.T) {}
-func TestBarA(t *testing.T) {}
-func TestBarB(t *testing.T) {}
-
--- filter_tests_test.go --
-package filter_test_cases
-
-import "testing"
-
 func TestTaskA(t *testing.T) {}
 func TestTaskB(t *testing.T) {}
 func TestTaskC(t *testing.T) {}
@@ -87,21 +57,21 @@ func Test(t *testing.T) {
 	}{
 		{
 			name:                  "skip_tests",
-			args:                  []string{"test", "//:skip_tests", "--test_env=GO_TEST_WRAP_TESTV=1"},
-			expectedRunTestCases:  map[string]bool{"TestBar": false},
-			expectedSkipTestCases: map[string]struct{}{"TestBaz": {}, "TestFoo": {}},
+			args:                  []string{"test", "//:filter_test", "--test_env=GO_TEST_WRAP_TESTV=1", "--test_filter=-^TestFoo$,-^TestTaskA$"},
+			expectedRunTestCases:  map[string]bool{"TestTaskB": false, "TestTaskC": false, "TestTaskD": false},
+			expectedSkipTestCases: map[string]struct{}{"TestTaskA": {}, "TestFoo": {}},
 		},
 		{
 			name:                  "run_only",
-			args:                  []string{"test", "//:run_only", "--test_env=GO_TEST_WRAP_TESTV=1"},
-			expectedRunTestCases:  map[string]bool{"TestBarA": false, "TestBarB": false},
-			expectedSkipTestCases: map[string]struct{}{"TestFooA": {}},
+			args:                  []string{"test", "//:filter_test", "--test_env=GO_TEST_WRAP_TESTV=1", "--test_filter=^TestTask.+"},
+			expectedRunTestCases:  map[string]bool{"TestTaskA": false, "TestTaskB": false, "TestTaskC": false, "TestTaskD": false},
+			expectedSkipTestCases: map[string]struct{}{"TestFoo": {}},
 		},
 		{
 			name:                  "filter_tests",
-			args:                  []string{"test", "//:filter_tests", "--test_env=GO_TEST_WRAP_TESTV=1"},
+			args:                  []string{"test", "//:filter_test", "--test_env=GO_TEST_WRAP_TESTV=1", "--test_filter=^TestTask.+,-^TestTaskB$"},
 			expectedRunTestCases:  map[string]bool{"TestTaskA": false, "TestTaskC": false, "TestTaskD": false},
-			expectedSkipTestCases: map[string]struct{}{"TestTaskB": {}},
+			expectedSkipTestCases: map[string]struct{}{"TestTaskB": {}, "TestFoo": {}},
 		},
 	}
 	for _, tt := range tests {
@@ -113,7 +83,7 @@ func Test(t *testing.T) {
 			if err != nil {
 				t.Fatal("could not find testlog root: %s", err)
 			}
-			path := filepath.Join(strings.TrimSpace(string(p)), tt.name, "test.xml")
+			path := filepath.Join(strings.TrimSpace(string(p)), "filter_test/test.xml")
 			b, err := ioutil.ReadFile(path)
 			if err != nil {
 				t.Fatalf("could not read generated xml file: %s", err)
@@ -130,13 +100,13 @@ func Test(t *testing.T) {
 						tt.expectedRunTestCases[tc.Name] = true
 					}
 					if _, ok := tt.expectedSkipTestCases[tc.Name]; ok {
-						t.Fatalf("unexpected test case ran %s", tc.Name)
+						t.Errorf("unexpected test case ran %s", tc.Name)
 					}
 				}
 			}
 			for testCase, found := range tt.expectedRunTestCases {
 				if !found {
-					t.Fatalf("failed to run expecte test case %s", testCase)
+					t.Errorf("failed to run expected test case %s", testCase)
 				}
 			}
 		})
