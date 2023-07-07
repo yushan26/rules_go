@@ -103,6 +103,7 @@ import (
 	"reflect"
 {{end}}
 	"strconv"
+	"strings"
 	"testing"
 	"testing/internal/testdeps"
 
@@ -190,10 +191,21 @@ func main() {
   {{end}}
 
 	if filter := os.Getenv("TESTBRIDGE_TEST_ONLY"); filter != "" {
-		if filter[0:1] == "-" {
-			flag.Lookup("test.skip").Value.Set(filter[1:])
-		} else {
-			flag.Lookup("test.run").Value.Set(filter)
+		filters := strings.Split(filter, ",")
+		var runTests []string
+		var skipTests []string
+		for _, f := range filters {
+			if strings.HasPrefix(f, "-") {
+				skipTests = append(skipTests, f[1:])
+			} else {
+				runTests = append(runTests, f)
+			}
+		}
+		if len(runTests) > 0 {
+			flag.Lookup("test.run").Value.Set(strings.Join(runTests, "|"))
+		}
+		if len(skipTests) > 0 {
+			flag.Lookup("test.skip").Value.Set(strings.Join(skipTests, "|"))
 		}
 	}
 
@@ -401,7 +413,6 @@ func genTestMain(args []string) error {
 			}
 		}
 	}
-
 	for name := range importMap {
 		// Set the names for all unused imports to "_"
 		if !pkgs[name] {
