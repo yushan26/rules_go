@@ -11,7 +11,6 @@ to make life a little easier.
 ## Contents
 - [gazelle](#gazelle)
 - [gomock](#gomock)
-- [go_embed_data](#go_embed_data)
 
 ## Additional resources
 - [gazelle rule]
@@ -28,8 +27,5 @@ This rule has moved. See [gazelle rule] in the Gazelle repository.
 """
 
 load("//extras:gomock.bzl", _gomock = "gomock")
-load("//extras:embed_data.bzl", _go_embed_data = "go_embed_data")
 
 gomock = _gomock
-
-go_embed_data = _go_embed_data

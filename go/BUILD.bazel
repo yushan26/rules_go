@@ -46,7 +46,6 @@ bzl_library(
     srcs = ["def.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "//extras:embed_data",
         "//extras:gomock",
         "//go/private:context",
         "//go/private:go_toolchain",

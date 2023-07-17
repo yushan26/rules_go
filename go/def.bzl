@@ -54,10 +54,6 @@ load(
     _go_source = "go_source",
 )
 load(
-    "//extras:embed_data.bzl",
-    _go_embed_data = "go_embed_data",
-)
-load(
     "//extras:gomock.bzl",
     _gomock = "gomock",
 )
@@ -126,7 +122,6 @@ TOOLS_NOGO = [
 RULES_GO_VERSION = "0.41.0"
 
 go_context = _go_context
-go_embed_data = _go_embed_data
 gomock = _gomock
 go_sdk = _go_sdk
 go_tool_library = _go_tool_library

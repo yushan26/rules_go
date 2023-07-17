@@ -10,7 +10,6 @@ bzl_library(
     srcs = ["extras.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "//extras:embed_data",
         "//extras:gomock",
     ],
 )

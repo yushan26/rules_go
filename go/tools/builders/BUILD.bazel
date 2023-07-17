@@ -77,12 +77,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-go_binary(
-    name = "embed",
-    srcs = ["embed.go"],
-    visibility = ["//visibility:public"],
-)
-
 go_source(
     name = "nogo_srcs",
     srcs = [

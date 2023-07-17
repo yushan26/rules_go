@@ -22,10 +22,6 @@ load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
 
-load("@io_bazel_rules_go//extras:embed_data_deps.bzl", "go_embed_data_dependencies")
-
-go_embed_data_dependencies()
-
 # Used by //tests:buildifier_test.
 http_archive(
     name = "com_github_bazelbuild_buildtools",
