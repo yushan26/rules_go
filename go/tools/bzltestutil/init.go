@@ -30,7 +30,10 @@ var (
 	testExecDir string
 )
 
-// This initializer runs before any user packages.
+// Before Go 1.21, this initializer runs before any user's package.
+//
+// Since Go 1.21, the order of this initializer calls is not guarenteed to be first.
+// See https://go.dev/doc/go1.21#language for more details.
 func init() {
 	var err error
 	testExecDir, err = os.Getwd()
