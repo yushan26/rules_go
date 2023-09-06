@@ -130,7 +130,7 @@ func runUpgradeDep(ctx context.Context, stderr io.Writer, args []string) error {
 	if err != nil {
 		return err
 	}
-	for _, tool := range []string{"diff", "gazelle", "gsutil", "patch"} {
+	for _, tool := range []string{"diff", "gazelle", "patch"} {
 		if _, err := exec.LookPath(tool); err != nil {
 			return fmt.Errorf("%s must be installed in PATH", tool)
 		}

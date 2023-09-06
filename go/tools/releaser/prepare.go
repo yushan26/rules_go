@@ -73,7 +73,7 @@ func runPrepare(ctx context.Context, stderr io.Writer, args []string) error {
 	var githubToken githubTokenFlag
 	var uploadToMirror bool
 	flags.Var(&githubToken, "githubtoken", "GitHub personal access token or path to a file containing it")
-	flags.BoolVar(&uploadToMirror, "mirror", true, "whether to upload dependency archives to mirror.bazel.build")
+	flags.BoolVar(&uploadToMirror, "mirror", false, "whether to upload dependency archives to mirror.bazel.build")
 	flags.StringVar(&rnotesPath, "rnotes", "", "Name of file containing release notes in Markdown")
 	flags.StringVar(&version, "version", "", "Version to release")
 	if err := flags.Parse(args); err != nil {
