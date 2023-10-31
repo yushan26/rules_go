@@ -14,6 +14,7 @@
 
 load(
     "//go/private:common.bzl",
+    "GO_TOOLCHAIN",
     "as_set",
     "count_group_matches",
     "has_shared_lib_extension",
@@ -209,6 +210,7 @@ def emit_link(
         executable = go.toolchain._builder,
         arguments = [builder_args, "--", tool_args],
         env = go.env,
+        toolchain = GO_TOOLCHAIN,
     )
 
 def _extract_extldflags(gc_linkopts, extldflags):

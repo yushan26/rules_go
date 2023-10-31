@@ -27,10 +27,6 @@ load(
     "OBJC_COMPILE_ACTION_NAME",
 )
 load(
-    ":go_toolchain.bzl",
-    "GO_TOOLCHAIN",
-)
-load(
     ":providers.bzl",
     "CgoContextInfo",
     "EXPLICIT_PATH",
@@ -52,6 +48,7 @@ load(
 load(
     ":common.bzl",
     "COVERAGE_OPTIONS_DENYLIST",
+    "GO_TOOLCHAIN",
     "as_iterable",
     "goos_to_extension",
     "goos_to_shared_extension",
