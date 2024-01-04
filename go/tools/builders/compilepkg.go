@@ -203,15 +203,6 @@ func compileArchive(
 	}
 	defer cleanup()
 
-	// As part of compilation process, rules_go does generate and/or rewrite code
-	// based on the original source files.  We should only run static analysis
-	// over original source files and not the generated source as end users have
-	// little control over the generated source.
-	//
-	// nogoSrcsOrigin maps generated/rewritten source files back to original source.
-	// If the original source path is an empty string, exclude generated source from nogo run.
-	nogoSrcsOrigin := make(map[string]string)
-
 	if len(srcs.goSrcs) == 0 {
 		// We need to run the compiler to create a valid archive, even if there's nothing in it.
 		// Otherwise, GoPack will complain if we try to add assembly or cgo objects.
@@ -237,7 +228,6 @@ func compileArchive(
 			pkg:      "empty",
 		})
 
-		nogoSrcsOrigin[emptyGoFile.Name()] = ""
 	}
 	packageName := srcs.goSrcs[0].pkg
 	var goSrcs, cgoSrcs []string
@@ -280,8 +270,18 @@ func compileArchive(
 	// constraints.
 	compilingWithCgo := haveCgo && cgoEnabled
 
+	// When coverage is set, source files will be modified during instrumentation. We should only run static analysis
+	// over original source files and not the modified ones.
+	// goSrcsNogo and cgoSrcsNogo are copies of the original source files for nogo to run static analysis.
+	goSrcsNogo := goSrcs
+	cgoSrcsNogo := cgoSrcs
+
 	// Instrument source files for coverage.
 	if coverMode != "" {
+		// deep copy original source files for nogo static analysis, avoid being modified by coverage.
+		goSrcsNogo = append([]string{}, goSrcs...)
+		cgoSrcsNogo = append([]string{}, cgoSrcs...)
+
 		relCoverPath := make(map[string]string)
 		for _, s := range coverSrcs {
 			relCoverPath[abs(s)] = s
@@ -324,7 +324,6 @@ func compileArchive(
 
 			if i < len(goSrcs) {
 				goSrcs[i] = coverSrc
-				nogoSrcsOrigin[coverSrc] = origSrc
 				continue
 			}
 
@@ -342,6 +341,15 @@ func compileArchive(
 		srcDir, goSrcs, objFiles, err = cgo2(goenv, goSrcs, cgoSrcs, cSrcs, cxxSrcs, objcSrcs, objcxxSrcs, sSrcs, hSrcs, packagePath, packageName, cc, cppFlags, cFlags, cxxFlags, objcFlags, objcxxFlags, ldFlags, cgoExportHPath)
 		if err != nil {
 			return err
+		}
+		if coverMode != "" && nogoPath != "" {
+			// Compile original source files, not coverage instrumented, for nogo
+			_, goSrcsNogo, _, err = cgo2(goenv, goSrcsNogo, cgoSrcsNogo, cSrcs, cxxSrcs, objcSrcs, objcxxSrcs, sSrcs, hSrcs, packagePath, packageName, cc, cppFlags, cFlags, cxxFlags, objcFlags, objcxxFlags, ldFlags, cgoExportHPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			goSrcsNogo = goSrcs
 		}
 
 		gcFlags = append(gcFlags, createTrimPath(gcFlags, srcDir))
@@ -429,31 +437,11 @@ func compileArchive(
 	// Run nogo concurrently.
 	var nogoChan chan error
 	outFactsPath := filepath.Join(workDir, nogoFact)
-	nogoSrcs := make([]string, 0, len(goSrcs))
-	for _, goSrc := range goSrcs {
-		// If source is found in the origin map, that means it's likely to be a generated source file
-		// so feed the original source file to static analyzers instead of the generated one.
-		//
-		// If origin is empty, that means the generated source file is not based on a user-provided source file
-		// thus ignore that entry entirely.
-		if originSrc, ok := nogoSrcsOrigin[goSrc]; ok {
-			if originSrc != "" {
-				nogoSrcs = append(nogoSrcs, originSrc)
-			}
-			continue
-		}
-
-		// TODO(sluongng): most likely what remains here are CGO-generated source files as the result of calling cgo2()
-		// Need to determine whether we want to feed these CGO-generated files into static analyzers.
-		//
-		// Add unknown origin source files into the mix.
-		nogoSrcs = append(nogoSrcs, goSrc)
-	}
-	if nogoPath != "" && len(nogoSrcs) > 0 {
+	if nogoPath != "" && len(goSrcsNogo) > 0 {
 		ctx, cancel := context.WithCancel(context.Background())
 		nogoChan = make(chan error)
 		go func() {
-			nogoChan <- runNogo(ctx, workDir, nogoPath, nogoSrcs, deps, packagePath, importcfgPath, outFactsPath)
+			nogoChan <- runNogo(ctx, workDir, nogoPath, goSrcsNogo, deps, packagePath, importcfgPath, outFactsPath)
 		}()
 		defer func() {
 			if nogoChan != nil {
