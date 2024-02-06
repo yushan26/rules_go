@@ -74,6 +74,7 @@ def _go_test_impl(ctx):
     )
     external_source = go.library_to_source(go, struct(
         srcs = [struct(files = go_srcs)],
+        data = ctx.attr.data,
         embedsrcs = [struct(files = internal_source.embedsrcs)],
         deps = internal_archive.direct + [internal_archive],
         x_defs = ctx.attr.x_defs,
