@@ -441,7 +441,14 @@ def _remote_sdk(ctx, urls, strip_prefix, sha256):
     # in Bazel 6.0.0+ (bazelbuild/bazel#16052). The only situation where
     # .zip files are needed seems to be a macOS host using a Windows toolchain
     # for remote execution.
-    if urls[0].endswith(".tar.gz"):
+    if versions.is_at_least("6.4.0", versions.get() or "6.4.0"):
+        ctx.download_and_extract(
+            url = urls,
+            stripPrefix = strip_prefix,
+            sha256 = sha256,
+            auth = auth,
+        )
+    elif urls[0].endswith(".tar.gz"):
         if strip_prefix != "go":
             fail("strip_prefix not supported")
         ctx.download(
@@ -455,7 +462,7 @@ def _remote_sdk(ctx, urls, strip_prefix, sha256):
             fail("error extracting Go SDK:\n" + res.stdout + res.stderr)
         ctx.delete("go_sdk.tar.gz")
     elif (urls[0].endswith(".zip") and
-          host_goos != "windows" and
+          host_goos == "darwin" and
           # Development versions of Bazel have an empty version string. We assume that they are
           # more recent than the version that introduced rename_files.
           versions.is_at_least("6.0.0", versions.get() or "6.0.0")):
@@ -469,13 +476,16 @@ def _remote_sdk(ctx, urls, strip_prefix, sha256):
             },
             auth = auth,
         )
-    else:
+    elif (urls[0].endswith(".zip") and
+          host_goos != "darwin"):
         ctx.download_and_extract(
             url = urls,
             stripPrefix = strip_prefix,
             sha256 = sha256,
             auth = auth,
         )
+    else:
+        fail("No supported workaround for extracting Go SDK non-ASCII filenames. Bazel 6.4.0+ has correct support for unpacking the Go SDK. {}".format(urls[0]))
 
 def _local_sdk(ctx, path):
     for entry in ctx.path(path).readdir():
