@@ -80,7 +80,7 @@ def _go_test_impl(ctx):
         x_defs = ctx.attr.x_defs,
     ), external_library, ctx.coverage_instrumented())
     external_source, internal_archive = _recompile_external_deps(go, external_source, internal_archive, [t.label for t in ctx.attr.embed])
-    external_archive = go.archive(go, external_source)
+    external_archive = go.archive(go, external_source, is_external_pkg = True)
 
     # now generate the main function
     repo_relative_rundir = ctx.attr.rundir or ctx.label.package or "."

@@ -72,7 +72,8 @@ def emit_compilepkg(
         out_cgo_export_h = None,
         gc_goopts = [],
         testfilter = None,  # TODO: remove when test action compiles packages
-        recompile_internal_deps = []):
+        recompile_internal_deps = [],
+        is_external_pkg = False):
     """Compiles a complete Go package."""
     if sources == None:
         fail("sources is a required parameter")
@@ -179,7 +180,7 @@ def emit_compilepkg(
     go.actions.run(
         inputs = inputs,
         outputs = outputs,
-        mnemonic = "GoCompilePkg",
+        mnemonic = "GoCompilePkgExternal" if is_external_pkg else "GoCompilePkg",
         executable = go.toolchain._builder,
         arguments = [args],
         env = go.env,
