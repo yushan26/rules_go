@@ -127,20 +127,27 @@ go_proto_compiler(
 non_go_reset_target(
     name = "protoc",
     dep = "@com_google_protobuf//:protoc",
+    deprecation = "No longer used by rules_go, will be removed in a future release.",
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "all_rules",
     testonly = True,
-    srcs = glob(["*.bzl"]) + ["//proto/wkt:all_rules"],
+    srcs = glob(["*.bzl"]) + [
+        "//proto/private:all_files",
+        "//proto/wkt:all_rules",
+    ],
     visibility = ["//:__subpackages__"],
 )
 
 filegroup(
     name = "all_files",
     testonly = True,
-    srcs = glob(["**"]) + ["//proto/wkt:all_files"],
+    srcs = glob(["**"]) + [
+        "//proto/private:all_files",
+        "//proto/wkt:all_files",
+    ],
     visibility = ["//:__subpackages__"],
 )
 
