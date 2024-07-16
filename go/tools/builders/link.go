@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -149,6 +150,19 @@ func link(args []string) error {
 	// add in the unprocess pass through options
 	goargs = append(goargs, toolArgs...)
 	goargs = append(goargs, *main)
+
+	clearGoRoot, err := onVersion(23)
+	if err != nil {
+		return err
+	}
+	if clearGoRoot {
+		// Explicitly set GOROOT to a dummy value when running linker.
+		// This ensures that the GOROOT written into the binary
+		// is constant and thus builds are reproducible.
+		oldroot := os.Getenv("GOROOT")
+		os.Setenv("GOROOT", "GOROOT")
+		defer os.Setenv("GOROOT", oldroot)
+	}
 	if err := goenv.runCommand(goargs); err != nil {
 		return err
 	}
@@ -160,4 +174,21 @@ func link(args []string) error {
 	}
 
 	return nil
+}
+
+var versionExp = regexp.MustCompile(`.*go1\.(\d+).*$`)
+
+func onVersion(version int) (bool, error) {
+	v := runtime.Version()
+	m := versionExp.FindStringSubmatch(v)
+	if len(m) != 2 {
+		return false, fmt.Errorf("failed to match against Go version %q", v)
+	}
+	mvStr := m[1]
+	mv, err := strconv.Atoi(mvStr)
+	if err != nil {
+		return false, fmt.Errorf("convert minor version %q to int: %w", mvStr, err)
+	}
+
+	return mv >= version, nil
 }
