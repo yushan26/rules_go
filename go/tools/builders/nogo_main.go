@@ -57,17 +57,18 @@ var typesSizes = types.SizesFor("gc", os.Getenv("GOARCH"))
 func main() {
 	log.SetFlags(0) // no timestamp
 	log.SetPrefix("nogo: ")
-	if err := run(os.Args[1:]); err != nil {
-		log.Fatal(err)
+	if err, exitCode := run(os.Args[1:]); err != nil {
+		log.Print(err)
+		os.Exit(exitCode)
 	}
 }
 
 // run returns an error if there is a problem loading the package or if any
 // analysis fails.
-func run(args []string) error {
+func run(args []string) (error, int) {
 	args, _, err := expandParamsFiles(args)
 	if err != nil {
-		return fmt.Errorf("error reading paramfiles: %v", err)
+		return fmt.Errorf("error reading paramfiles: %v", err), nogoError
 	}
 
 	factMap := factMultiFlag{}
@@ -81,23 +82,30 @@ func run(args []string) error {
 
 	packageFile, importMap, err := readImportCfg(*importcfg)
 	if err != nil {
-		return fmt.Errorf("error parsing importcfg: %v", err)
+		return fmt.Errorf("error parsing importcfg: %v", err), nogoError
 	}
 
 	diagnostics, facts, err := checkPackage(analyzers, *packagePath, packageFile, importMap, factMap, srcs)
 	if err != nil {
-		return fmt.Errorf("error running analyzers: %v", err)
+		return fmt.Errorf("error running analyzers: %v", err), nogoError
 	}
-	if diagnostics != "" {
-		return fmt.Errorf("errors found by nogo during build-time code analysis:\n%s\n", diagnostics)
-	}
+	// Write the facts file for downstream consumers before failing due to diagnostics.
 	if *xPath != "" {
 		if err := ioutil.WriteFile(abs(*xPath), facts, 0o666); err != nil {
-			return fmt.Errorf("error writing facts: %v", err)
+			return fmt.Errorf("error writing facts: %v", err), nogoError
 		}
 	}
+	if diagnostics != "" {
+		// debugMode is defined by the template in generate_nogo_main.go.
+		exitCode := nogoViolation
+		if debugMode {
+			// Force actions running nogo to fail to help debug issues.
+			exitCode = nogoError
+		}
+		return fmt.Errorf("errors found by nogo during build-time code analysis:\n%s\n", diagnostics), exitCode
+	}
 
-	return nil
+	return nil, nogoSuccess
 }
 
 // Adapted from go/src/cmd/compile/internal/gc/main.go. Keep in sync.

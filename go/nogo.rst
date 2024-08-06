@@ -3,6 +3,7 @@
 
 .. _nogo: nogo.rst#nogo
 .. _configuring-analyzers: nogo.rst#configuring-analyzers
+.. _validation action: https://bazel.build/extending/rules#validation_actions
 .. _Bzlmod: /docs/go/core/bzlmod.md#configuring-nogo
 .. _go_library: /docs/go/core/rules.md#go_library
 .. _analysis: https://godoc.org/golang.org/x/tools/go/analysis
@@ -133,12 +134,22 @@ Usage
 ---------------------------------
 
 ``nogo``, upon configured, will be invoked automatically when building any Go target in your
-workspace.  If any of the analyzers reject the program, the build will fail.
+workspace.  If any of the analyzers reject the program, the build will fail. However, since
+``nogo`` runs in a `validation action`_ that is separate from compilation, you can use
+``--keep_going`` to have compilation continue and see all ``nogo`` findings, not just those
+from the first failing target. You can also specify ``--norun_validations`` to disable all
+validations, including ``nogo``.
+
+Note: Since the action that runs ``nogo`` doesn't fail if ``nogo`` produces findings, it
+is not possible to debug it with ``--sandbox_debug``. If necessary, set the ``debug``
+attribute of the ``nogo`` rule to ``True`` to have ``nogo`` fail in this case.
 
 ``nogo`` will run on all Go targets in your workspace, including tests and binary targets.
-It will also run on targets that are imported from other workspaces by default. You could
-exclude the external repositories from ``nogo`` by using the `exclude_files` regex in
-`configuring-analyzers`_.
+When using WORKSPACE, it will also run on targets that are imported from other workspaces
+by default. You could exclude the external repositories from ``nogo`` by using the
+`exclude_files` regex in `configuring-analyzers`_. With Bzlmod, external repositories are
+not validated with ``nogo`` by default. See the Bzlmod_ guide for more information
+on how to configure the ``nogo`` scope in this case.
 
 Relationship with other linters
 ~~~~~~~~~~~~~~~~~~~~~
