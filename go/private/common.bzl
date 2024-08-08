@@ -110,10 +110,6 @@ def split_srcs(srcs):
         extouts.append(src)
     return sources
 
-def join_srcs(source):
-    """Combines source from a split_srcs struct into a single list."""
-    return source.go + source.headers + source.asm + source.c + source.cxx + source.objc + source.syso
-
 def os_path(ctx, path):
     path = str(path)  # maybe convert from path type
     if ctx.os.name.startswith("windows"):
