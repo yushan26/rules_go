@@ -25,7 +25,6 @@ load(
     "asm_exts",
     "cgo_exts",
     "go_exts",
-    "split_srcs",
 )
 load(
     "//go/private:context.bzl",
@@ -64,7 +63,7 @@ def _go_test_impl(ctx):
     internal_library = go.new_library(go, testfilter = "exclude")
     internal_source = go.library_to_source(go, ctx.attr, internal_library, ctx.coverage_instrumented())
     internal_archive = go.archive(go, internal_source)
-    go_srcs = split_srcs(internal_source.srcs).go
+    go_srcs = [src for src in internal_source.srcs if src.extension == "go"]
 
     # Compile the library with the external black box tests
     external_library = go.new_library(

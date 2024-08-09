@@ -76,40 +76,6 @@ syso_exts = [
     ".syso",
 ]
 
-def split_srcs(srcs):
-    """Returns a struct of sources, divided by extension."""
-    sources = struct(
-        go = [],
-        asm = [],
-        headers = [],
-        c = [],
-        cxx = [],
-        objc = [],
-        syso = [],
-    )
-    ext_pairs = (
-        (sources.go, go_exts),
-        (sources.headers, hdr_exts),
-        (sources.asm, asm_exts),
-        (sources.c, c_exts),
-        (sources.cxx, cxx_exts),
-        (sources.objc, objc_exts),
-        (sources.syso, syso_exts),
-    )
-    extmap = {}
-    for outs, exts in ext_pairs:
-        for ext in exts:
-            ext = ext[1:]  # strip the dot
-            if ext in extmap:
-                break
-            extmap[ext] = outs
-    for src in as_iterable(srcs):
-        extouts = extmap.get(src.extension)
-        if extouts == None:
-            fail("Unknown source type {0}".format(src.basename))
-        extouts.append(src)
-    return sources
-
 def os_path(ctx, path):
     path = str(path)  # maybe convert from path type
     if ctx.os.name.startswith("windows"):
