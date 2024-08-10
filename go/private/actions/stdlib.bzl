@@ -38,18 +38,12 @@ def emit_stdlib(go):
     Otherwise, the standard library will be compiled for the target.
 
     Returns:
-        A list of providers containing GoLibrary and GoSource. GoSource.stdlib
-        will point to a new GoStdLib.
+        A list of providers containing GoLibrary, GoSource and GoStdLib.
     """
-    library = go.new_library(go, resolver = _stdlib_library_to_source)
+    library = go.new_library(go)
     source = go.library_to_source(go, {}, library, False)
-    return [source, library]
-
-def _stdlib_library_to_source(go, _attr, source, _merge):
-    if _should_use_sdk_stdlib(go):
-        source["stdlib"] = _sdk_stdlib(go)
-    else:
-        source["stdlib"] = _build_stdlib(go)
+    stdlib = _sdk_stdlib(go) if _should_use_sdk_stdlib(go) else _build_stdlib(go)
+    return [source, library, stdlib]
 
 def _should_use_sdk_stdlib(go):
     version = parse_version(go.sdk.version)

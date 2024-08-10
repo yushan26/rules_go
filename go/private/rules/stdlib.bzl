@@ -31,8 +31,7 @@ load(
 
 def _stdlib_impl(ctx):
     go = go_context(ctx)
-    source, library = go.toolchain.actions.stdlib(go)
-    return [source, library, source.stdlib]
+    return go.toolchain.actions.stdlib(go)
 
 stdlib = rule(
     implementation = _stdlib_impl,
