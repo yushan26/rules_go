@@ -134,11 +134,6 @@ method. In general, only rules_go should need to build or handle these.
 | The original source files this library is based on. This may differ from                         |
 | :param:`srcs` if processing tools such as cgo or cover are applied.                              |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`orig_src_map`          | :type:`dict of File to File`                                    |
-+--------------------------------+-----------------------------------------------------------------+
-| Maps generated files in :param:`srcs` back to :param:`orig_srcs`. Not all                        |
-| generated files may appear in here.                                                              |
-+--------------------------------+-----------------------------------------------------------------+
 | :param:`embedsrcs`             | :type:`list of File`                                            |
 +--------------------------------+-----------------------------------------------------------------+
 | Files that may be embedded into the compiled package using ``//go:embed``                        |

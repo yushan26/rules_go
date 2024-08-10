@@ -222,7 +222,6 @@ def _merge_embed(source, embed):
     s = get_source(embed)
     source["srcs"] = s.srcs + source["srcs"]
     source["orig_srcs"] = s.orig_srcs + source["orig_srcs"]
-    source["orig_src_map"].update(s.orig_src_map)
     source["embedsrcs"] = source["embedsrcs"] + s.embedsrcs
     source["cover"] = source["cover"] + s.cover
     source["deps"] = source["deps"] + s.deps
@@ -277,7 +276,6 @@ def _library_to_source(go, attr, library, coverage_instrumented):
         "mode": go.mode,
         "srcs": srcs,
         "orig_srcs": srcs,
-        "orig_src_map": {},
         "cover": [],
         "embedsrcs": embedsrcs,
         "x_defs": {},
