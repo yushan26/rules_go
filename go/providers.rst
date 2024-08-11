@@ -392,16 +392,16 @@ GoSDK
 +--------------------------------+-----------------------------------------------------------------+
 | A file in the SDK root directory. Used to determine ``GOROOT``.                                  |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`libs`                  | :type:`list of File`                                            |
+| :param:`libs`                  | :type:`depset of File`                                          |
 +--------------------------------+-----------------------------------------------------------------+
 | Pre-compiled .a files for the standard library, built for the                                    |
 | execution platform.                                                                              |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`headers`               | :type:`list of File`                                            |
+| :param:`headers`               | :type:`depset of File`                                          |
 +--------------------------------+-----------------------------------------------------------------+
 | .h files from pkg/include that may be included in assembly sources.                              |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`srcs`                  | :type:`list of File`                                            |
+| :param:`srcs`                  | :type:`depset of File`                                          |
 +--------------------------------+-----------------------------------------------------------------+
 | Source files for importable packages in the standard library.                                    |
 | Internal, vendored, and tool packages might not be included.                                     |
@@ -410,7 +410,7 @@ GoSDK
 +--------------------------------+-----------------------------------------------------------------+
 | A file containing a list of importable packages in the standard library.                         |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`tools`                 | :type:`list of File`                                            |
+| :param:`tools`                 | :type:`depset of File`                                          |
 +--------------------------------+-----------------------------------------------------------------+
 | Executable files from pkg/tool built for the execution platform.                                 |
 +--------------------------------+-----------------------------------------------------------------+

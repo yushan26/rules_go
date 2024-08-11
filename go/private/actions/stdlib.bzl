@@ -60,19 +60,22 @@ def _should_use_sdk_stdlib(go):
             go.mode.link == LINKMODE_NORMAL)
 
 def _build_stdlib_list_json(go):
+    sdk = go.sdk
+
     out = go.declare_file(go, "stdlib.pkg.json")
     cache_dir = go.declare_directory(go, "gocache")
     args = go.builder_args(go, "stdliblist")
-    args.add("-sdk", go.sdk.root_file.dirname)
+    args.add("-sdk", sdk.root_file.dirname)
     args.add("-out", out)
     args.add("-cache", cache_dir.path)
 
-    inputs = go.sdk_files
+    inputs_direct = [sdk.go]
+    inputs_transitive = [sdk.headers, sdk.srcs, sdk.libs, sdk.tools]
     if not go.mode.pure:
-        inputs += go.cc_toolchain_files
+        inputs_transitive.append(go.cc_toolchain_files)
 
     go.actions.run(
-        inputs = inputs,
+        inputs = depset(inputs_direct, transitive = inputs_transitive),
         outputs = [out, cache_dir],
         mnemonic = "GoStdlibList",
         executable = go.toolchain._builder,
@@ -134,19 +137,17 @@ def _build_stdlib(go):
 
     args.add("-gcflags", quote_opts(go.mode.gc_goopts))
 
-    inputs = (go.sdk.srcs +
-              go.sdk.headers +
-              go.sdk.tools +
-              [go.sdk.go, go.sdk.package_list, go.sdk.root_file] +
-              go.cc_toolchain_files)
+    sdk = go.sdk
+    inputs_direct = [sdk.go, sdk.package_list, sdk.root_file]
+    inputs_transitive = [sdk.headers, sdk.srcs, sdk.tools, go.cc_toolchain_files]
 
     if go.mode.pgoprofile:
         args.add("-pgoprofile", go.mode.pgoprofile)
-        inputs.append(go.mode.pgoprofile)
+        inputs_direct.append(go.mode.pgoprofile)
 
     outputs = [pkg]
     go.actions.run(
-        inputs = inputs,
+        inputs = depset(direct = inputs_direct, transitive = inputs_transitive),
         outputs = outputs,
         mnemonic = "GoStdlib",
         executable = go.toolchain._builder,
@@ -157,6 +158,6 @@ def _build_stdlib(go):
     )
     return GoStdLib(
         _list_json = _build_stdlib_list_json(go),
-        libs = [pkg],
+        libs = depset([pkg]),
         root_file = pkg,
     )
