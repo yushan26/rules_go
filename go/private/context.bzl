@@ -433,9 +433,9 @@ def _matches_scopes(label, scopes):
             return True
     return False
 
-def _get_nogo(go):
+def get_nogo(go):
     """Returns the nogo file for this target, if enabled and in scope."""
-    label = go._ctx.label
+    label = go.label
     if _matches_scopes(label, NOGO_INCLUDES) and not _matches_scopes(label, NOGO_EXCLUDES):
         return go.nogo
     else:
@@ -604,7 +604,6 @@ def go_context(ctx, attr = None):
         library_to_source = _library_to_source,
         declare_file = _declare_file,
         declare_directory = _declare_directory,
-        get_nogo = _get_nogo,
 
         # Private
         # TODO: All uses of this should be removed

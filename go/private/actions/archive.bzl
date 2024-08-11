@@ -17,6 +17,10 @@ load(
     "as_tuple",
 )
 load(
+    "//go/private:context.bzl",
+    "get_nogo",
+)
+load(
     "//go/private:mode.bzl",
     "LINKMODE_C_ARCHIVE",
     "LINKMODE_C_SHARED",
@@ -59,14 +63,16 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
     # store export information for compiling dependent packages separately
     out_export = go.declare_file(go, name = source.library.name, ext = pre_ext + ".x")
     out_cgo_export_h = None  # set if cgo used in c-shared or c-archive mode
-    out_facts = None
-    out_nogo_log = None
-    out_nogo_validation = None
-    nogo = go.get_nogo(go)
+
+    nogo = get_nogo(go)
     if nogo:
         out_facts = go.declare_file(go, name = source.library.name, ext = pre_ext + ".facts")
         out_nogo_log = go.declare_file(go, name = source.library.name, ext = pre_ext + ".nogo.log")
         out_nogo_validation = go.declare_file(go, name = source.library.name, ext = pre_ext + ".nogo")
+    else:
+        out_facts = None
+        out_nogo_log = None
+        out_nogo_validation = None
 
     direct = [get_archive(dep) for dep in source.deps]
 
