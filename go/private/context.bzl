@@ -350,7 +350,7 @@ def _collect_cc_infos(deps, cdeps):
 def _check_binary_dep(go, dep, edge):
     """Checks that this rule doesn't depend on a go_binary or go_test.
 
-    go_binary and go_test may return provides with useful information for other
+    go_binary and go_test may return providers with useful information for other
     rules (like go_path), but go_binary and go_test may not depend on other
     go_binary and go_binary targets. Their dependencies may be built in
     different modes, resulting in conflicts and opaque errors.
@@ -483,7 +483,7 @@ def go_context(ctx, attr = None):
     env = {
         "GOARCH": mode.goarch,
         "GOOS": mode.goos,
-        "GOEXPERIMENT": ",".join(toolchain.sdk.experiments),
+        "GOEXPERIMENT": toolchain.sdk.experiments,
         "GOROOT": goroot,
         "GOROOT_FINAL": "GOROOT",
         "CGO_ENABLED": "0" if mode.pure else "1",
