@@ -218,5 +218,4 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
         cgo_deps = depset(transitive = [cgo_deps] + [a.cgo_deps for a in direct]),
         cgo_exports = cgo_exports,
         runfiles = runfiles,
-        mode = go.mode,
     )

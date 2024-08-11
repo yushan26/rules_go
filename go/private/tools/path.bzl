@@ -26,7 +26,6 @@ load(
     "GoArchive",
     "GoPath",
     "effective_importpath_pkgpath",
-    "get_archive",
 )
 
 def _go_path_impl(ctx):
@@ -35,10 +34,11 @@ def _go_path_impl(ctx):
     # package may also appear in different modes.
     mode_to_deps = {}
     for dep in ctx.attr.deps:
-        archive = get_archive(dep)
-        if archive.mode not in mode_to_deps:
-            mode_to_deps[archive.mode] = []
-        mode_to_deps[archive.mode].append(archive)
+        archive = dep[GoArchive]
+        mode = archive.source.mode
+        if mode not in mode_to_deps:
+            mode_to_deps[mode] = []
+        mode_to_deps[mode].append(archive)
     mode_to_archive = {}
     for mode, archives in mode_to_deps.items():
         direct = [a.data for a in archives]
