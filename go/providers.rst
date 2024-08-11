@@ -191,10 +191,6 @@ method. In general, only rules_go should need to build or handle these.
 +--------------------------------+-----------------------------------------------------------------+
 | List of additional flags to pass to the external linker.                                         |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`cgo_deps`              | :type:`list of File`                                            |
-+--------------------------------+-----------------------------------------------------------------+
-| Deprecated; use ``cdeps`` instead. The direct cgo dependencies of this library.                  |
-+--------------------------------+-----------------------------------------------------------------+
 | :param:`cgo_exports`           | :type:`list of File`                                            |
 +--------------------------------+-----------------------------------------------------------------+
 | The exposed cc headers for these sources.                                                        |

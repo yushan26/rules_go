@@ -236,7 +236,6 @@ def _merge_embed(source, embed):
     source["copts"] = source["copts"] or s.copts
     source["cxxopts"] = source["cxxopts"] or s.cxxopts
     source["clinkopts"] = source["clinkopts"] or s.clinkopts
-    source["cgo_deps"] = source["cgo_deps"] + s.cgo_deps
     source["cgo_exports"] = source["cgo_exports"] + s.cgo_exports
 
 def _dedup_deps(deps):
@@ -288,7 +287,6 @@ def _library_to_source(go, attr, library, coverage_instrumented):
         "copts": _expand_opts(go, "copts", getattr(attr, "copts", [])),
         "cxxopts": _expand_opts(go, "cxxopts", getattr(attr, "cxxopts", [])),
         "clinkopts": _expand_opts(go, "clinkopts", getattr(attr, "clinkopts", [])),
-        "cgo_deps": [],
         "cgo_exports": [],
         "cc_info": None,
         "pgoprofile": getattr(attr, "pgoprofile", None),
