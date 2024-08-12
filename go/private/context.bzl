@@ -49,8 +49,6 @@ load(
     "COVERAGE_OPTIONS_DENYLIST",
     "GO_TOOLCHAIN",
     "as_iterable",
-    "goos_to_extension",
-    "goos_to_shared_extension",
     "is_struct",
 )
 load(
@@ -569,8 +567,6 @@ def go_context(ctx, attr = None):
         sdk_root = toolchain.sdk.root_file,
         sdk_tools = toolchain.sdk.tools,
         actions = ctx.actions,
-        exe_extension = goos_to_extension(mode.goos),
-        shared_extension = goos_to_shared_extension(mode.goos),
         cc_toolchain_files = cc_toolchain_files,
         package_list = toolchain.sdk.package_list,
         importpath = importpath,

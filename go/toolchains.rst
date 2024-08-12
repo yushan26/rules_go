@@ -591,16 +591,6 @@ Fields
 | The actions structure from the Bazel context, which has all the methods for building new         |
 | bazel actions.                                                                                   |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`exe_extension`         | :type:`string`                                                  |
-+--------------------------------+-----------------------------------------------------------------+
-| The suffix to use for all executables in this build mode. Mostly used when generating the output |
-| filenames of binary rules.                                                                       |
-+--------------------------------+-----------------------------------------------------------------+
-| :param:`shared_extension`      | :type:`string`                                                  |
-+--------------------------------+-----------------------------------------------------------------+
-| The suffix to use for shared libraries in this build mode. Mostly used when                      |
-| generating output filenames of binary rules.                                                     |
-+--------------------------------+-----------------------------------------------------------------+
 | :param:`cc_toolchain_files`    | :type:`list of File`                                            |
 +--------------------------------+-----------------------------------------------------------------+
 | The files you need to add to the inputs of an action in order to use the cc toolchain.           |
