@@ -348,7 +348,7 @@ def _check_binary_dep(go, dep, edge):
 
     go_binary and go_test may return providers with useful information for other
     rules (like go_path), but go_binary and go_test may not depend on other
-    go_binary and go_binary targets. Their dependencies may be built in
+    go_binary and go_test targets. Their dependencies may be built in
     different modes, resulting in conflicts and opaque errors.
     """
     if (type(dep) == "Target" and
@@ -538,7 +538,7 @@ def go_context(ctx, attr = None):
             cgo_tools.ld_dynamic_lib_path,
         ]
         for tool_path in tool_paths:
-            tool_dir, _, _ = tool_path.rpartition("/")
+            tool_dir = tool_path[:tool_path.rfind("/")]
             path_set[tool_dir] = None
         paths = sorted(path_set.keys())
         if ctx.configuration.host_path_separator == ":":
