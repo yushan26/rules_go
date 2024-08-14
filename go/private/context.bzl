@@ -278,7 +278,7 @@ def _library_to_source(go, attr, library, coverage_instrumented):
         "x_defs": {},
         "deps": deps,
         "gc_goopts": _expand_opts(go, "gc_goopts", getattr(attr, "gc_goopts", [])),
-        "runfiles": _collect_runfiles(go, getattr(attr, "data", []), getattr(attr, "deps", [])),
+        "runfiles": _collect_runfiles(go, getattr(attr, "data", []), attr_deps),
         "cgo": getattr(attr, "cgo", False),
         "cdeps": getattr(attr, "cdeps", []),
         "cppopts": _expand_opts(go, "cppopts", getattr(attr, "cppopts", [])),
@@ -322,12 +322,10 @@ def _collect_runfiles(go, data, deps):
 
     srcs and their runfiles are not included."""
     files = depset(transitive = [t[DefaultInfo].files for t in data])
-    runfiles = go._ctx.runfiles(transitive_files = files)
-    for t in data:
-        runfiles = runfiles.merge(t[DefaultInfo].data_runfiles)
-    for t in deps:
-        runfiles = runfiles.merge(get_source(t).runfiles)
-    return runfiles
+    return go._ctx.runfiles(transitive_files = files).merge_all(
+        [t[DefaultInfo].data_runfiles for t in data] +
+        [get_source(t).runfiles for t in deps],
+    )
 
 def _collect_cc_infos(deps, cdeps):
     cc_infos = []
