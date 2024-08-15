@@ -40,7 +40,6 @@ load(
     "GoLibrary",
     "GoSource",
     "INFERRED_PATH",
-    "get_archive",
 )
 load(
     "//go/private/rules:binary.bzl",
@@ -525,7 +524,7 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
     # Build a map from labels to GoArchiveData.
     # If none of the librares embedded in the internal archive are in the
     # dependency graph, then nothing needs to be recompiled.
-    arc_data_list = depset(transitive = [get_archive(dep).transitive for dep in external_source.deps]).to_list()
+    arc_data_list = depset(transitive = [archive.transitive for archive in external_source.deps]).to_list()
     label_to_arc_data = {a.label: a for a in arc_data_list}
     if all([l not in label_to_arc_data for l in library_labels]):
         return external_source, internal_archive
@@ -543,7 +542,7 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
     dep_list = []
 
     # stack is a stack of targets to process. We're done when it's empty.
-    stack = [get_archive(dep).data.label for dep in external_source.deps]
+    stack = [archive.data.label for archive in external_source.deps]
 
     # deps_pushed tracks the status of each target.
     # DEPS_UNPROCESSED means the target is on the stack, but its dependencies
@@ -622,10 +621,10 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
     # Pass internal dependencies that need to be recompiled down to the builder to check if the internal archive
     # tries to import any of the dependencies. If there is, that means that there is a dependency cycle.
     need_recompile_deps = []
-    for dep in internal_source.deps:
-        dep_data = get_archive(dep).data
+    for archive in internal_source.deps:
+        dep_data = archive.data
         if not need_recompile[dep_data.label]:
-            internal_deps.append(dep)
+            internal_deps.append(archive)
         else:
             need_recompile_deps.append(dep_data.importpath)
 
@@ -712,5 +711,5 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
     # Finally, we need to replace external_source.deps with the recompiled
     # archives.
     attrs = structs.to_dict(external_source)
-    attrs["deps"] = [label_to_archive[get_archive(dep).data.label] for dep in external_source.deps]
+    attrs["deps"] = [label_to_archive[archive.data.label] for archive in external_source.deps]
     return GoSource(**attrs), internal_archive

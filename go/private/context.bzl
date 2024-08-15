@@ -68,6 +68,7 @@ load(
     "GoSource",
     "GoStdLib",
     "INFERRED_PATH",
+    "get_archive",
     "get_source",
 )
 
@@ -236,28 +237,25 @@ def _merge_embed(source, embed):
     source["clinkopts"] = source["clinkopts"] or s.clinkopts
     source["cgo_exports"] = source["cgo_exports"] + s.cgo_exports
 
-def _dedup_deps(deps):
-    """Returns a list of deps without duplicate import paths.
+def _dedup_archives(archives):
+    """Returns a list of archives without duplicate import paths.
 
-    Earlier targets take precedence over later targets. This is intended to
+    Earlier archives take precedence over later targets. This is intended to
     allow an embedding library to override the dependencies of its
     embedded libraries.
 
     Args:
-      deps: an iterable containing either Targets or GoArchives.
+      archives: an iterable of GoArchives.
     """
-    deduped_deps = []
+    deduped_archives = []
     importpaths = {}
-    for dep in deps:
-        if hasattr(dep, "data") and hasattr(dep.data, "importpath"):
-            importpath = dep.data.importpath
-        else:
-            importpath = dep[GoLibrary].importpath
+    for arc in archives:
+        importpath = arc.data.importpath
         if importpath in importpaths:
             continue
         importpaths[importpath] = None
-        deduped_deps.append(dep)
-    return deduped_deps
+        deduped_archives.append(arc)
+    return deduped_archives
 
 def _library_to_source(go, attr, library, coverage_instrumented):
     #TODO: stop collapsing a depset in this line...
@@ -268,6 +266,7 @@ def _library_to_source(go, attr, library, coverage_instrumented):
     attr_deps = getattr(attr, "deps", [])
     generated_deps = getattr(library, "deps", [])
     deps = attr_deps + generated_deps
+    deps = [get_archive(dep) for dep in deps]
     source = {
         "library": library,
         "mode": go.mode,
@@ -295,7 +294,9 @@ def _library_to_source(go, attr, library, coverage_instrumented):
     for e in getattr(attr, "embed", []):
         _check_binary_dep(go, e, "embed")
         _merge_embed(source, e)
-    source["deps"] = _dedup_deps(source["deps"])
+
+    source["deps"] = _dedup_archives(source["deps"])
+
     x_defs = source["x_defs"]
     for k, v in getattr(attr, "x_defs", {}).items():
         v = _expand_location(go, attr, v)
@@ -314,7 +315,9 @@ def _library_to_source(go, attr, library, coverage_instrumented):
                 fail("source {} has C/C++ extension, but cgo was not enabled (set 'cgo = True')".format(f.path))
     if library.resolve:
         library.resolve(go, attr, source, _merge_embed)
-    source["cc_info"] = _collect_cc_infos(source["deps"], source["cdeps"])
+
+    source["cc_info"] = _collect_cc_infos(attr_deps + generated_deps, source["cdeps"])
+
     return GoSource(**source)
 
 def _collect_runfiles(go, data, deps):

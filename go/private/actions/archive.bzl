@@ -31,7 +31,6 @@ load(
     "GoArchive",
     "GoArchiveData",
     "effective_importpath_pkgpath",
-    "get_archive",
 )
 load(
     "//go/private/actions:compilepkg.bzl",
@@ -74,7 +73,7 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
         out_nogo_log = None
         out_nogo_validation = None
 
-    direct = [get_archive(dep) for dep in source.deps]
+    direct = source.deps
 
     files = []
     for a in direct:
