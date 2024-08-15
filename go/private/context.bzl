@@ -158,10 +158,6 @@ def _declare_file(go, path = "", ext = "", name = ""):
 def _declare_directory(go, path = "", ext = "", name = ""):
     return go.actions.declare_directory(_child_name(go, path, ext, name))
 
-def _new_args(go):
-    # TODO(jayconrod): print warning.
-    return go.builder_args(go)
-
 def _dirname(file):
     return file.dirname
 
@@ -171,7 +167,8 @@ def _builder_args(go, command = None, use_path_mapping = False):
     args.set_param_file_format("shell")
     if command:
         args.add(command)
-    args.add("-sdk", go.sdk.root_file.dirname)
+    sdk_root_file = go.sdk.root_file
+    args.add("-sdk", sdk_root_file.dirname)
 
     # Path mapping can't map the values of environment variables, so we need to pass GOROOT to the
     # action via an argument instead.
@@ -179,13 +176,13 @@ def _builder_args(go, command = None, use_path_mapping = False):
         if go.stdlib:
             goroot_file = go.stdlib.root_file
         else:
-            goroot_file = go.sdk_root
+            goroot_file = sdk_root_file
 
         # Use a file rather than goroot as the latter is just a string and thus
         # not subject to path mapping.
         args.add_all("-goroot", [goroot_file], map_each = _dirname, expand_directories = False)
     args.add("-installsuffix", installsuffix(go.mode))
-    args.add_joined("-tags", go.tags, join_with = ",")
+    args.add_joined("-tags", go.mode.tags, join_with = ",")
     return args
 
 def _tool_args(go):
@@ -437,7 +434,7 @@ def get_nogo(go):
     else:
         return None
 
-def go_context(ctx, attr = None):
+def go_context(ctx, attr = None, include_deprecated_properties = True):
     """Returns an API used to build Go code.
 
     See /go/toolchains.rst#go-context
@@ -468,8 +465,6 @@ def go_context(ctx, attr = None):
         stdlib = _flatten_possibly_transitioned_attr(attr._stdlib)[GoStdLib]
 
     mode = get_mode(ctx, toolchain, cgo_context_info, go_config_info)
-    tags = mode.tags
-    binary = toolchain.sdk.go
 
     if stdlib:
         goroot = stdlib.root_file.dirname
@@ -528,19 +523,29 @@ def go_context(ctx, attr = None):
     importpath, importmap, pathtype = _infer_importpath(ctx, attr)
     importpath_aliases = tuple(getattr(attr, "importpath_aliases", ()))
 
+    if include_deprecated_properties:
+        deprecated_properties = {
+            "root": goroot,
+            "go": toolchain.sdk.go,
+            "sdk_root": toolchain.sdk.root_file,
+            "sdk_tools": toolchain.sdk.tools,
+            "package_list": toolchain.sdk.package_list,
+            "tags": mode.tags,
+            "stamp": mode.stamp,
+            "cover_format": mode.cover_format,
+            "pgoprofile": mode.pgoprofile,
+        }
+    else:
+        deprecated_properties = {}
+
     return struct(
         # Fields
         toolchain = toolchain,
         sdk = toolchain.sdk,
         mode = mode,
-        root = goroot,
-        go = binary,
         stdlib = stdlib,
-        sdk_root = toolchain.sdk.root_file,
-        sdk_tools = toolchain.sdk.tools,
         actions = ctx.actions,
         cc_toolchain_files = cc_toolchain_files,
-        package_list = toolchain.sdk.package_list,
         importpath = importpath,
         importmap = importmap,
         importpath_aliases = importpath_aliases,
@@ -552,18 +557,14 @@ def go_context(ctx, attr = None):
         coverage_instrumented = ctx.coverage_instrumented(),
         env = env,
         env_for_path_mapping = env_for_path_mapping,
-        tags = tags,
-        stamp = mode.stamp,
         label = ctx.label,
-        cover_format = mode.cover_format,
-        pgoprofile = mode.pgoprofile,
+
         # Action generators
         archive = toolchain.actions.archive,
         binary = toolchain.actions.binary,
         link = toolchain.actions.link,
 
         # Helpers
-        args = _new_args,  # deprecated
         builder_args = _builder_args,
         tool_args = _tool_args,
         new_library = _new_library,
@@ -574,6 +575,9 @@ def go_context(ctx, attr = None):
         # Private
         # TODO: All uses of this should be removed
         _ctx = ctx,
+
+        # Deprecated
+        **deprecated_properties
     )
 
 def _go_context_data_impl(ctx):

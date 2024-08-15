@@ -56,7 +56,7 @@ def _go_test_impl(ctx):
     It emits an action to run the test generator, and then compiles the
     test into a binary."""
 
-    go = go_context(ctx)
+    go = go_context(ctx, include_deprecated_properties = False)
 
     # Compile the library to test with internal white box tests
     internal_library = go.new_library(go, testfilter = "exclude")
@@ -100,7 +100,7 @@ def _go_test_impl(ctx):
             arguments.add("-cover_mode", "atomic")
         else:
             arguments.add("-cover_mode", "set")
-        arguments.add("-cover_format", go.cover_format)
+        arguments.add("-cover_format", go.mode.cover_format)
     arguments.add(
         # the l is the alias for the package under test, the l_test must be the
         # same with the test suffix

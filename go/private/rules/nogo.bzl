@@ -38,7 +38,7 @@ def _nogo_impl(ctx):
         return None
 
     # Generate the source for the nogo binary.
-    go = go_context(ctx)
+    go = go_context(ctx, include_deprecated_properties = False)
     nogo_main = go.declare_file(go, path = "nogo_main.go")
     nogo_args = ctx.actions.args()
     nogo_args.add("gennogomain")

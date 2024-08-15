@@ -96,7 +96,7 @@ def new_cc_import(
 
 def _go_binary_impl(ctx):
     """go_binary_impl emits actions for compiling and linking a go executable."""
-    go = go_context(ctx)
+    go = go_context(ctx, include_deprecated_properties = False)
 
     is_main = go.mode.link not in (LINKMODE_SHARED, LINKMODE_PLUGIN)
     library = go.new_library(go, importable = False, is_main = is_main)
