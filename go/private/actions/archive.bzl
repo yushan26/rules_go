@@ -171,7 +171,6 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
 
         # GoSource fields
         srcs = as_tuple(source.srcs),
-        orig_srcs = as_tuple(source.orig_srcs),
         _cover = source.cover,
         _embedsrcs = as_tuple(source.embedsrcs),
         _x_defs = tuple(source.x_defs.items()),

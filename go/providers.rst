@@ -129,11 +129,6 @@ method. In general, only rules_go should need to build or handle these.
 +--------------------------------+-----------------------------------------------------------------+
 | The sources to compile into the archive.                                                         |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`orig_srcs`             | :type:`list of File`                                            |
-+--------------------------------+-----------------------------------------------------------------+
-| The original source files this library is based on. This may differ from                         |
-| :param:`srcs` if processing tools such as cgo or cover are applied.                              |
-+--------------------------------+-----------------------------------------------------------------+
 | :param:`embedsrcs`             | :type:`list of File`                                            |
 +--------------------------------+-----------------------------------------------------------------+
 | Files that may be embedded into the compiled package using ``//go:embed``                        |
@@ -265,10 +260,6 @@ rule.  Instead, it's referenced in the ``data`` field of GoArchive_.
 +--------------------------------+-----------------------------------------------------------------+
 | The .go sources compiled into the archive. May have been generated or                            |
 | transformed with tools like cgo and cover.                                                       |
-+--------------------------------+-----------------------------------------------------------------+
-| :param:`orig_srcs`             | :type:`tuple of File`                                           |
-+--------------------------------+-----------------------------------------------------------------+
-| The unmodified sources provided to the rule, including .go, .s, .h, .c files.                    |
 +--------------------------------+-----------------------------------------------------------------+
 | :param:`runfiles`              | :type:`runfiles`                                           |
 +--------------------------------+-----------------------------------------------------------------+

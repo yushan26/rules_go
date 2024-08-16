@@ -216,7 +216,6 @@ def _new_library(go, name = None, importpath = None, resolver = None, importable
 def _merge_embed(source, embed):
     s = get_source(embed)
     source["srcs"] = s.srcs + source["srcs"]
-    source["orig_srcs"] = s.orig_srcs + source["orig_srcs"]
     source["embedsrcs"] = source["embedsrcs"] + s.embedsrcs
     source["cover"] = depset(transitive = [source["cover"], s.cover])
     source["deps"] = source["deps"] + s.deps
@@ -267,7 +266,6 @@ def _library_to_source(go, attr, library, coverage_instrumented):
         "library": library,
         "mode": go.mode,
         "srcs": srcs,
-        "orig_srcs": srcs,
         "embedsrcs": embedsrcs,
         "cover": depset(attr_srcs) if coverage_instrumented else depset(),
         "x_defs": {},

@@ -57,7 +57,7 @@ def _go_path_impl(ctx):
             pkg = struct(
                 importpath = importpath,
                 dir = "src/" + pkgpath,
-                srcs = as_list(archive.orig_srcs),
+                srcs = as_list(archive.srcs),
                 runfiles = archive.runfiles,
                 embedsrcs = as_list(archive._embedsrcs),
                 pkgs = {mode: archive.file},
