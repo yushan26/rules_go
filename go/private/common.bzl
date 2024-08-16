@@ -172,12 +172,6 @@ def as_tuple(v):
         return tuple(v.to_list())
     fail("as_tuple failed on {}".format(v))
 
-_STRUCT_TYPE = type(struct())
-
-def is_struct(v):
-    """Returns true if v is a struct."""
-    return type(v) == _STRUCT_TYPE
-
 def count_group_matches(v, prefix, suffix):
     """Counts reluctant substring matches between prefix and suffix.
 

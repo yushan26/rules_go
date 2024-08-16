@@ -49,7 +49,6 @@ load(
     "COVERAGE_OPTIONS_DENYLIST",
     "GO_TOOLCHAIN",
     "as_iterable",
-    "is_struct",
 )
 load(
     ":mode.bzl",
@@ -282,7 +281,6 @@ def _library_to_source(go, attr, library, coverage_instrumented):
         "cxxopts": _expand_opts(go, "cxxopts", getattr(attr, "cxxopts", [])),
         "clinkopts": _expand_opts(go, "clinkopts", getattr(attr, "clinkopts", [])),
         "cgo_exports": [],
-        "cc_info": None,
         "pgoprofile": getattr(attr, "pgoprofile", None),
     }
 
@@ -310,10 +308,9 @@ def _library_to_source(go, attr, library, coverage_instrumented):
             # sources. compilepkg will catch these instead.
             if f.extension in ("c", "cc", "cxx", "cpp", "hh", "hpp", "hxx"):
                 fail("source {} has C/C++ extension, but cgo was not enabled (set 'cgo = True')".format(f.path))
+
     if library.resolve:
         library.resolve(go, attr, source, _merge_embed)
-
-    source["cc_info"] = _collect_cc_infos(attr_deps + generated_deps, source["cdeps"])
 
     return GoSource(**source)
 
@@ -326,19 +323,6 @@ def _collect_runfiles(go, data, deps):
         [t[DefaultInfo].data_runfiles for t in data] +
         [get_source(t).runfiles for t in deps],
     )
-
-def _collect_cc_infos(deps, cdeps):
-    cc_infos = []
-    for dep in cdeps:
-        if CcInfo in dep:
-            cc_infos.append(dep[CcInfo])
-    for dep in deps:
-        # dep may be a struct, which doesn't support indexing by providers.
-        if is_struct(dep):
-            continue
-        if GoSource in dep:
-            cc_infos.append(dep[GoSource].cc_info)
-    return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
 def _check_binary_dep(go, dep, edge):
     """Checks that this rule doesn't depend on a go_binary or go_test.
