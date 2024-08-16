@@ -334,7 +334,6 @@ def _check_importpaths(ctx):
             fail("import path '%s' contains invalid character :" % p)
 
 def _infer_importpath(ctx, attr):
-    DEFAULT_LIB = "go_default_library"
     VENDOR_PREFIX = "/vendor/"
 
     # Check if paths were explicitly set, either in this rule or in an
@@ -344,8 +343,6 @@ def _infer_importpath(ctx, attr):
     embed_importpath = ""
     embed_importmap = ""
     for embed in getattr(attr, "embed", []):
-        if GoLibrary not in embed:
-            continue
         lib = embed[GoLibrary]
         if lib.pathtype == EXPLICIT_PATH:
             embed_importpath = lib.importpath
@@ -358,9 +355,9 @@ def _infer_importpath(ctx, attr):
         return importpath, importmap, EXPLICIT_PATH
 
     # Guess an import path based on the directory structure
-    # This should only really be relied on for binaries
+    # This should only be executed for binaries, since Gazelle generates importpath for libraries.
     importpath = ctx.label.package
-    if ctx.label.name != DEFAULT_LIB and not importpath.endswith(ctx.label.name):
+    if not importpath.endswith(ctx.label.name):
         importpath += "/" + ctx.label.name
     if importpath.rfind(VENDOR_PREFIX) != -1:
         importpath = importpath[len(VENDOR_PREFIX) + importpath.rfind(VENDOR_PREFIX):]
