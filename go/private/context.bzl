@@ -284,10 +284,7 @@ def _library_to_source(go, attr, library, coverage_instrumented):
         "pgoprofile": getattr(attr, "pgoprofile", None),
     }
 
-    for dep in source["deps"]:
-        _check_binary_dep(go, dep, "deps")
     for e in getattr(attr, "embed", []):
-        _check_binary_dep(go, e, "embed")
         _merge_embed(source, e)
 
     source["deps"] = _dedup_archives(source["deps"])
@@ -323,24 +320,6 @@ def _collect_runfiles(go, data, deps):
         [t[DefaultInfo].data_runfiles for t in data] +
         [get_source(t).runfiles for t in deps],
     )
-
-def _check_binary_dep(go, dep, edge):
-    """Checks that this rule doesn't depend on a go_binary or go_test.
-
-    go_binary and go_test may return providers with useful information for other
-    rules (like go_path), but go_binary and go_test may not depend on other
-    go_binary and go_test targets. Their dependencies may be built in
-    different modes, resulting in conflicts and opaque errors.
-    """
-    if (type(dep) == "Target" and
-        DefaultInfo in dep and
-        getattr(dep[DefaultInfo], "files_to_run", None) and
-        dep[DefaultInfo].files_to_run.executable):
-        fail("rule {rule} depends on executable {dep} via {edge}. This is not safe for cross-compilation. Depend on go_library instead.".format(
-            rule = str(go.label),
-            dep = str(dep.label),
-            edge = edge,
-        ))
 
 def _check_importpaths(ctx):
     paths = []
