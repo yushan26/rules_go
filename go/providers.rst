@@ -186,10 +186,6 @@ method. In general, only rules_go should need to build or handle these.
 +--------------------------------+-----------------------------------------------------------------+
 | List of additional flags to pass to the external linker.                                         |
 +--------------------------------+-----------------------------------------------------------------+
-| :param:`cgo_exports`           | :type:`list of File`                                            |
-+--------------------------------+-----------------------------------------------------------------+
-| The exposed cc headers for these sources.                                                        |
-+--------------------------------+-----------------------------------------------------------------+
 | :param:`cc_info`               | :type:`CcInfo`                                                  |
 +--------------------------------+-----------------------------------------------------------------+
 | The result of merging the ``CcInfo``s of all `deps` and `cdeps`                                  |
@@ -312,7 +308,7 @@ which is available through the :param:`data` field.
 +--------------------------------+-----------------------------------------------------------------+
 | :param:`cgo_exports`           | :type:`depset of GoSource`                                      |
 +--------------------------------+-----------------------------------------------------------------+
-| The the transitive set of c headers needed to reference exports of this archive.                 |
+| The transitive set of c headers needed to reference exports of this archive.                     |
 +--------------------------------+-----------------------------------------------------------------+
 | :param:`runfiles`              | runfiles_                                                       |
 +--------------------------------+-----------------------------------------------------------------+

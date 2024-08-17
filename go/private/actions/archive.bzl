@@ -181,7 +181,6 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
         _copts = as_tuple(source.copts),
         _cxxopts = as_tuple(source.cxxopts),
         _clinkopts = as_tuple(source.clinkopts),
-        _cgo_exports = as_tuple(source.cgo_exports),
 
         # Information on dependencies
         _dep_labels = tuple([d.data.label for d in direct]),
@@ -198,13 +197,11 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
     x_defs = dict(source.x_defs)
     for a in direct:
         x_defs.update(a.x_defs)
-    cgo_exports_direct = list(source.cgo_exports)
 
     # Ensure that the _cgo_export.h of the current target comes first when cgo_exports is iterated
     # by prepending it and specifying the order explicitly. This is required as the CcInfo attached
     # to the archive only exposes a single header rather than combining all headers.
-    if out_cgo_export_h:
-        cgo_exports_direct.insert(0, out_cgo_export_h)
+    cgo_exports_direct = [out_cgo_export_h] if out_cgo_export_h else []
     cgo_exports = depset(direct = cgo_exports_direct, transitive = [a.cgo_exports for a in direct], order = "preorder")
     return GoArchive(
         source = source,

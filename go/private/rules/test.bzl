@@ -684,7 +684,6 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
             copts = as_list(arc_data._copts),
             cxxopts = as_list(arc_data._cxxopts),
             clinkopts = as_list(arc_data._clinkopts),
-            cgo_exports = as_list(arc_data._cgo_exports),
         )
 
         # If this archive needs to be recompiled, use go.archive.
@@ -701,7 +700,7 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
                 transitive = depset(direct = [arc_data], transitive = [a.transitive for a in deps]),
                 x_defs = source.x_defs,
                 cgo_deps = depset(direct = arc_data._cgo_deps, transitive = [a.cgo_deps for a in deps]),
-                cgo_exports = depset(direct = list(source.cgo_exports), transitive = [a.cgo_exports for a in deps]),
+                cgo_exports = depset(transitive = [a.cgo_exports for a in deps]),
                 runfiles = source.runfiles,
                 mode = go.mode,
             )
