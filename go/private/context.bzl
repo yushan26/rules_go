@@ -319,38 +319,22 @@ def _collect_runfiles(go, data, deps):
         [get_source(t).runfiles for t in deps],
     )
 
-def _check_importpaths(ctx):
-    paths = []
-    p = getattr(ctx.attr, "importpath", "")
-    if p:
-        paths.append(p)
-    p = getattr(ctx.attr, "importmap", "")
-    if p:
-        paths.append(p)
-    paths.extend(getattr(ctx.attr, "importpath_aliases", ()))
-
-    for p in paths:
-        if ":" in p:
-            fail("import path '%s' contains invalid character :" % p)
-
-def _infer_importpath(ctx, attr):
+def _infer_importpath(ctx, embeds, importpath, importmap):
     VENDOR_PREFIX = "/vendor/"
 
     # Check if paths were explicitly set, either in this rule or in an
     # embedded rule.
-    attr_importpath = getattr(attr, "importpath", "")
-    attr_importmap = getattr(attr, "importmap", "")
     embed_importpath = ""
     embed_importmap = ""
-    for embed in getattr(attr, "embed", []):
+    for embed in embeds:
         lib = embed[GoLibrary]
         if lib.pathtype == EXPLICIT_PATH:
             embed_importpath = lib.importpath
             embed_importmap = lib.importmap
             break
 
-    importpath = attr_importpath or embed_importpath
-    importmap = attr_importmap or embed_importmap or importpath
+    importpath = importpath or embed_importpath
+    importmap = importmap or embed_importmap or importpath
     if importpath:
         return importpath, importmap, EXPLICIT_PATH
 
@@ -392,7 +376,14 @@ def get_nogo(go):
     else:
         return None
 
-def go_context(ctx, attr = None, include_deprecated_properties = True):
+def go_context(
+        ctx,
+        attr = None,
+        include_deprecated_properties = True,
+        importpath = None,
+        importmap = None,
+        embed = None,
+        importpath_aliases = None):
     """Returns an API used to build Go code.
 
     See /go/toolchains.rst#go-context
@@ -477,9 +468,26 @@ def go_context(ctx, attr = None, include_deprecated_properties = True):
         cc_toolchain_files = depset()
         cgo_tools = None
 
-    _check_importpaths(ctx)
-    importpath, importmap, pathtype = _infer_importpath(ctx, attr)
-    importpath_aliases = tuple(getattr(attr, "importpath_aliases", ()))
+    if importpath == None:
+        importpath = getattr(attr, "importpath", "")
+    if ":" in importpath:
+        fail("import path '%s' contains invalid character :" % importpath)
+
+    if importmap == None:
+        importmap = getattr(attr, "importmap", "")
+    if ":" in importmap:
+        fail("import path '%s' contains invalid character :" % importmap)
+
+    if importpath_aliases == None:
+        importpath_aliases = getattr(attr, "importpath_aliases", ())
+    for p in importpath_aliases:
+        if ":" in p:
+            fail("import path '%s' contains invalid character :" % p)
+
+    if embed == None:
+        embed = getattr(attr, "embed", [])
+
+    importpath, importmap, pathtype = _infer_importpath(ctx, embed, importpath, importmap)
 
     if include_deprecated_properties:
         deprecated_properties = {

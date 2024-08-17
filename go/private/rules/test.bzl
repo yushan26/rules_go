@@ -148,7 +148,7 @@ def _go_test_impl(ctx):
         resolve = None,
     )
     test_deps = external_archive.direct + [external_archive] + ctx.attr._testmain_additional_deps
-    if ctx.configuration.coverage_enabled:
+    if go.coverage_enabled:
         test_deps.append(go.coverdata)
     test_source = go.library_to_source(go, struct(
         srcs = [struct(files = [main_go])],
