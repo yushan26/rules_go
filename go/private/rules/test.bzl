@@ -699,7 +699,7 @@ def _recompile_external_deps(go, external_source, internal_archive, library_labe
                 libs = depset(direct = [arc_data.file], transitive = [a.libs for a in deps]),
                 transitive = depset(direct = [arc_data], transitive = [a.transitive for a in deps]),
                 x_defs = source.x_defs,
-                cgo_deps = depset(direct = arc_data._cgo_deps, transitive = [a.cgo_deps for a in deps]),
+                cgo_deps = depset(transitive = [arc_data._cgo_deps] + [a.cgo_deps for a in deps]),
                 cgo_exports = depset(transitive = [a.cgo_exports for a in deps]),
                 runfiles = source.runfiles,
                 mode = go.mode,

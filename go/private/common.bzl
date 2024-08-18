@@ -162,16 +162,6 @@ def as_iterable(v):
         return v.to_list()
     fail("as_iterator failed on {}".format(v))
 
-def as_tuple(v):
-    """Returns a list, tuple, or depset as a tuple."""
-    if type(v) == "tuple":
-        return v
-    if type(v) == "list":
-        return tuple(v)
-    if type(v) == "depset":
-        return tuple(v.to_list())
-    fail("as_tuple failed on {}".format(v))
-
 def count_group_matches(v, prefix, suffix):
     """Counts reluctant substring matches between prefix and suffix.
 

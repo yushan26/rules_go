@@ -13,10 +13,6 @@
 # limitations under the License.
 
 load(
-    "//go/private:common.bzl",
-    "as_tuple",
-)
-load(
     "//go/private:context.bzl",
     "get_nogo",
 )
@@ -170,17 +166,17 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
         pathtype = source.library.pathtype,
 
         # GoSource fields
-        srcs = as_tuple(source.srcs),
+        srcs = tuple(source.srcs),
         _cover = source.cover,
-        _embedsrcs = as_tuple(source.embedsrcs),
+        _embedsrcs = tuple(source.embedsrcs),
         _x_defs = tuple(source.x_defs.items()),
-        _gc_goopts = as_tuple(source.gc_goopts),
+        _gc_goopts = tuple(source.gc_goopts),
         _cgo = source.cgo,
-        _cdeps = as_tuple(source.cdeps),
-        _cppopts = as_tuple(source.cppopts),
-        _copts = as_tuple(source.copts),
-        _cxxopts = as_tuple(source.cxxopts),
-        _clinkopts = as_tuple(source.clinkopts),
+        _cdeps = tuple(source.cdeps),
+        _cppopts = tuple(source.cppopts),
+        _copts = tuple(source.copts),
+        _cxxopts = tuple(source.cxxopts),
+        _clinkopts = tuple(source.clinkopts),
 
         # Information on dependencies
         _dep_labels = tuple([d.data.label for d in direct]),
@@ -192,7 +188,7 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
         facts_file = out_facts,
         runfiles = source.runfiles,
         _validation_output = out_nogo_validation,
-        _cgo_deps = as_tuple(cgo_deps),
+        _cgo_deps = cgo_deps,
     )
     x_defs = dict(source.x_defs)
     for a in direct:
