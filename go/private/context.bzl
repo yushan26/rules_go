@@ -855,6 +855,14 @@ cgo_context_data_proxy = rule(
 )
 
 def _go_config_impl(ctx):
+    pgo_profiles = ctx.attr.pgoprofile.files.to_list()
+    if len(pgo_profiles) > 2:
+        fail("providing more than one pprof file to pgoprofile is not supported")
+    if len(pgo_profiles) == 1:
+        pgoprofile = pgo_profiles[0]
+    else:
+        pgoprofile = None
+
     return [GoConfigInfo(
         static = ctx.attr.static[BuildSettingInfo].value,
         race = ctx.attr.race[BuildSettingInfo].value,
@@ -870,7 +878,7 @@ def _go_config_impl(ctx):
         gc_goopts = ctx.attr.gc_goopts[BuildSettingInfo].value,
         amd64 = ctx.attr.amd64,
         arm = ctx.attr.arm,
-        pgoprofile = ctx.attr.pgoprofile,
+        pgoprofile = pgoprofile,
     )]
 
 go_config = rule(

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load(":providers.bzl", "GoConfigInfo")
+
 # Modes are documented in go/modes.rst#compilation-modes
 
 LINKMODE_NORMAL = "normal"
@@ -58,89 +60,79 @@ def mode_string(mode):
         result.extend(mode.gc_goopts)
     return "_".join(result)
 
-def _ternary(*values):
-    for v in values:
-        if v == None:
-            continue
-        if type(v) == "bool":
-            return v
-        if type(v) != "string":
-            fail("Invalid value type {}".format(type(v)))
-        v = v.lower()
-        if v == "on":
-            return True
-        if v == "off":
-            return False
-        if v == "auto":
-            continue
-        fail("Invalid value {}".format(v))
-    fail("_ternary failed to produce a final result from {}".format(values))
+default_go_config_info = GoConfigInfo(
+    static = False,
+    race = False,
+    msan = False,
+    pure = False,
+    strip = False,
+    debug = False,
+    linkmode = LINKMODE_NORMAL,
+    gc_linkopts = [],
+    tags = [],
+    stamp = False,
+    cover_format = None,
+    gc_goopts = [],
+    amd64 = None,
+    arm = None,
+    pgoprofile = None,
+)
 
 def get_mode(ctx, go_toolchain, cgo_context_info, go_config_info):
-    static = _ternary(go_config_info.static if go_config_info else "off")
-    if getattr(ctx.attr, "pure", None) == "off" and not cgo_context_info:
-        fail("{} has pure explicitly set to off, but no C++ toolchain could be found for its platform".format(ctx.label))
-    pure = _ternary(
-        "on" if not cgo_context_info else "auto",
-        go_config_info.pure if go_config_info else "off",
-    )
-    race = _ternary(go_config_info.race if go_config_info else "off")
-    msan = _ternary(go_config_info.msan if go_config_info else "off")
-    strip = go_config_info.strip if go_config_info else False
-    stamp = go_config_info.stamp if go_config_info else False
-    debug = go_config_info.debug if go_config_info else False
-    linkmode = go_config_info.linkmode if go_config_info else LINKMODE_NORMAL
-    cover_format = go_config_info and go_config_info.cover_format
-    amd64 = go_config_info.amd64 if go_config_info else None
-    arm = go_config_info.arm if go_config_info else None
+    if go_config_info == None:
+        go_config_info = default_go_config_info
+
+    if not cgo_context_info:
+        if getattr(ctx.attr, "pure", None) == "off":
+            fail("{} has pure explicitly set to off, but no C++ toolchain could be found for its platform".format(ctx.label))
+        pure = True
+    else:
+        pure = go_config_info.pure
+
+    race = go_config_info.race
+    msan = go_config_info.msan
+    linkmode = go_config_info.linkmode
     goos = go_toolchain.default_goos if getattr(ctx.attr, "goos", "auto") == "auto" else ctx.attr.goos
     goarch = go_toolchain.default_goarch if getattr(ctx.attr, "goarch", "auto") == "auto" else ctx.attr.goarch
-    gc_goopts = go_config_info.gc_goopts if go_config_info else []
-    pgoprofile = None
-    if go_config_info:
-        if len(go_config_info.pgoprofile.files.to_list()) > 2:
-            fail("providing more than one pprof file to pgoprofile is not supported")
-        elif len(go_config_info.pgoprofile.files.to_list()) == 1:
-            pgoprofile = go_config_info.pgoprofile.files.to_list()[0]
 
     # TODO(jayconrod): check for more invalid and contradictory settings.
-    if pure and race:
-        fail("race instrumentation can't be enabled when cgo is disabled. Check that pure is not set to \"off\" and a C/C++ toolchain is configured.")
-    if pure and msan:
-        fail("msan instrumentation can't be enabled when cgo is disabled. Check that pure is not set to \"off\" and a C/C++ toolchain is configured.")
-    if pure and linkmode in LINKMODES_REQUIRING_EXTERNAL_LINKING:
-        fail(("linkmode '{}' can't be used when cgo is disabled. Check that pure is not set to \"off\" and that a C/C++ toolchain is configured for " +
-              "your current platform. If you defined a custom platform, make sure that it has the @io_bazel_rules_go//go/toolchain:cgo_on constraint value.").format(linkmode))
+    if pure:
+        if race:
+            fail("race instrumentation can't be enabled when cgo is disabled. Check that pure is not set to \"off\" and a C/C++ toolchain is configured.")
+        if msan:
+            fail("msan instrumentation can't be enabled when cgo is disabled. Check that pure is not set to \"off\" and a C/C++ toolchain is configured.")
+        if linkmode in LINKMODES_REQUIRING_EXTERNAL_LINKING:
+            fail(("linkmode '{}' can't be used when cgo is disabled. Check that pure is not set to \"off\" and that a C/C++ toolchain is configured for " +
+                  "your current platform. If you defined a custom platform, make sure that it has the @io_bazel_rules_go//go/toolchain:cgo_on constraint value.").format(linkmode))
 
-    gc_linkopts = list(go_config_info.gc_linkopts) if go_config_info else []
-    tags = list(go_config_info.tags) if go_config_info else []
+    tags = list(go_config_info.tags)
     if "gotags" in ctx.var:
-        tags.extend(ctx.var["gotags"].split(","))
+        tags += ctx.var["gotags"].split(",")
     if cgo_context_info:
-        tags.extend(cgo_context_info.tags)
+        tags += cgo_context_info.tags
     if race:
         tags.append("race")
     if msan:
         tags.append("msan")
 
     return struct(
-        static = static,
+        static = go_config_info.static,
         race = race,
         msan = msan,
         pure = pure,
         link = linkmode,
-        gc_linkopts = gc_linkopts,
-        strip = strip,
-        stamp = stamp,
-        debug = debug,
+        gc_linkopts = go_config_info.gc_linkopts,
+        strip = go_config_info.strip,
+        stamp = go_config_info.stamp,
+        debug = go_config_info.debug,
         goos = goos,
         goarch = goarch,
         tags = tags,
-        cover_format = cover_format,
-        amd64 = amd64,
-        arm = arm,
-        gc_goopts = gc_goopts,
-        pgoprofile = pgoprofile,
+        cover_format = go_config_info.cover_format,
+        amd64 = go_config_info.amd64,
+        arm = go_config_info.arm,
+        gc_goopts = go_config_info.gc_goopts,
+        pgoprofile = go_config_info.pgoprofile,
     )
 
 def installsuffix(mode):
