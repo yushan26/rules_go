@@ -222,14 +222,16 @@ def _merge_embed(source, embed):
     source["x_defs"].update(s.x_defs)
     source["gc_goopts"] = source["gc_goopts"] + s.gc_goopts
     source["runfiles"] = source["runfiles"].merge(s.runfiles)
-    if s.cgo and source["cgo"]:
-        fail("multiple libraries with cgo enabled")
-    source["cgo"] = source["cgo"] or s.cgo
-    source["cdeps"] = source["cdeps"] or s.cdeps
-    source["cppopts"] = source["cppopts"] or s.cppopts
-    source["copts"] = source["copts"] or s.copts
-    source["cxxopts"] = source["cxxopts"] or s.cxxopts
-    source["clinkopts"] = source["clinkopts"] or s.clinkopts
+
+    if s.cgo:
+        if source["cgo"]:
+            fail("multiple libraries with cgo enabled")
+        source["cgo"] = s.cgo
+        source["cdeps"] = s.cdeps
+        source["cppopts"] = s.cppopts
+        source["copts"] = s.copts
+        source["cxxopts"] = s.cxxopts
+        source["clinkopts"] = s.clinkopts
 
 def _dedup_archives(archives):
     """Returns a list of archives without duplicate import paths.
@@ -258,9 +260,7 @@ def _library_to_source(go, attr, library, coverage_instrumented):
     srcs = attr_srcs + generated_srcs
     embedsrcs = [f for t in getattr(attr, "embedsrcs", []) for f in as_iterable(t.files)]
     attr_deps = getattr(attr, "deps", [])
-    generated_deps = getattr(library, "deps", [])
-    deps = attr_deps + generated_deps
-    deps = [get_archive(dep) for dep in deps]
+    deps = [get_archive(dep) for dep in attr_deps]
     source = {
         "library": library,
         "mode": go.mode,
