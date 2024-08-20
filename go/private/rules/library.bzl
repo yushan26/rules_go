@@ -39,8 +39,11 @@ def _go_library_impl(ctx):
         include_deprecated_properties = False,
         importpath = ctx.attr.importpath,
         importmap = ctx.attr.importmap,
+        importpath_aliases = ctx.attr.importpath_aliases,
         embed = ctx.attr.embed,
+        go_context_data = ctx.attr._go_context_data,
     )
+
     library = go.new_library(go)
     source = go.library_to_source(go, ctx.attr, library, ctx.coverage_instrumented())
     archive = go.archive(go, source)
@@ -204,8 +207,22 @@ go_library = rule(
 
 # See docs/go/core/rules.md#go_library for full documentation.
 
+def _go_tool_library_impl(ctx):
+    """Implements the go_tool_library() rule."""
+    go = go_context(ctx, include_deprecated_properties = False)
+
+    library = go.new_library(go)
+    source = go.library_to_source(go, ctx.attr, library, ctx.coverage_instrumented())
+    archive = go.archive(go, source)
+
+    return [
+        library,
+        source,
+        archive,
+    ]
+
 go_tool_library = rule(
-    _go_library_impl,
+    _go_tool_library_impl,
     attrs = {
         "data": attr.label_list(allow_files = True),
         "srcs": attr.label_list(allow_files = True),

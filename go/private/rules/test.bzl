@@ -56,7 +56,13 @@ def _go_test_impl(ctx):
     It emits an action to run the test generator, and then compiles the
     test into a binary."""
 
-    go = go_context(ctx, include_deprecated_properties = False)
+    go = go_context(
+        ctx,
+        include_deprecated_properties = False,
+        importpath = ctx.attr.importpath,
+        embed = ctx.attr.embed,
+        go_context_data = ctx.attr._go_context_data,
+    )
 
     # Compile the library to test with internal white box tests
     internal_library = go.new_library(go, testfilter = "exclude")

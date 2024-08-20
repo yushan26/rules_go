@@ -115,7 +115,13 @@ _go_cc_aspect = aspect(
 
 def _go_binary_impl(ctx):
     """go_binary_impl emits actions for compiling and linking a go executable."""
-    go = go_context(ctx, include_deprecated_properties = False)
+    go = go_context(
+        ctx,
+        include_deprecated_properties = False,
+        importpath = ctx.attr.importpath,
+        embed = ctx.attr.embed,
+        go_context_data = ctx.attr._go_context_data,
+    )
 
     is_main = go.mode.link not in (LINKMODE_SHARED, LINKMODE_PLUGIN)
     library = go.new_library(go, importable = False, is_main = is_main)

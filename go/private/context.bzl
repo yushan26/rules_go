@@ -381,7 +381,8 @@ def go_context(
         importpath = None,
         importmap = None,
         embed = None,
-        importpath_aliases = None):
+        importpath_aliases = None,
+        go_context_data = None):
     """Returns an API used to build Go code.
 
     See /go/toolchains.rst#go-context
@@ -390,26 +391,33 @@ def go_context(
         attr = ctx.attr
     toolchain = ctx.toolchains[GO_TOOLCHAIN]
     cgo_context_info = None
+    go_context_info = None
     go_config_info = None
     stdlib = None
-    coverdata = None
-    nogo = None
-    if hasattr(attr, "_go_context_data"):
-        go_context_data = _flatten_possibly_transitioned_attr(attr._go_context_data)
+
+    if go_context_data == None:
+        if hasattr(attr, "_go_context_data"):
+            go_context_data = _flatten_possibly_transitioned_attr(attr._go_context_data)
+            if CgoContextInfo in go_context_data:
+                cgo_context_info = go_context_data[CgoContextInfo]
+            go_config_info = go_context_data[GoConfigInfo]
+            stdlib = go_context_data[GoStdLib]
+            go_context_info = go_context_data[GoContextInfo]
+        if getattr(attr, "_cgo_context_data", None) and CgoContextInfo in attr._cgo_context_data:
+            cgo_context_info = attr._cgo_context_data[CgoContextInfo]
+        if getattr(attr, "cgo_context_data", None) and CgoContextInfo in attr.cgo_context_data:
+            cgo_context_info = attr.cgo_context_data[CgoContextInfo]
+        if hasattr(attr, "_go_config"):
+            go_config_info = attr._go_config[GoConfigInfo]
+        if hasattr(attr, "_stdlib"):
+            stdlib = _flatten_possibly_transitioned_attr(attr._stdlib)[GoStdLib]
+    else:
+        go_context_data = _flatten_possibly_transitioned_attr(go_context_data)
         if CgoContextInfo in go_context_data:
             cgo_context_info = go_context_data[CgoContextInfo]
         go_config_info = go_context_data[GoConfigInfo]
         stdlib = go_context_data[GoStdLib]
-        coverdata = go_context_data[GoContextInfo].coverdata
-        nogo = go_context_data[GoContextInfo].nogo
-    if getattr(attr, "_cgo_context_data", None) and CgoContextInfo in attr._cgo_context_data:
-        cgo_context_info = attr._cgo_context_data[CgoContextInfo]
-    if getattr(attr, "cgo_context_data", None) and CgoContextInfo in attr.cgo_context_data:
-        cgo_context_info = attr.cgo_context_data[CgoContextInfo]
-    if hasattr(attr, "_go_config"):
-        go_config_info = attr._go_config[GoConfigInfo]
-    if hasattr(attr, "_stdlib"):
-        stdlib = _flatten_possibly_transitioned_attr(attr._stdlib)[GoStdLib]
+        go_context_info = go_context_data[GoContextInfo]
 
     mode = get_mode(ctx, toolchain, cgo_context_info, go_config_info)
 
@@ -515,8 +523,8 @@ def go_context(
         importpath_aliases = importpath_aliases,
         pathtype = pathtype,
         cgo_tools = cgo_tools,
-        nogo = nogo,
-        coverdata = coverdata,
+        nogo = go_context_info.nogo if go_context_info else None,
+        coverdata = go_context_info.coverdata if go_context_info else None,
         coverage_enabled = ctx.configuration.coverage_enabled,
         coverage_instrumented = ctx.coverage_instrumented(),
         env = env,
