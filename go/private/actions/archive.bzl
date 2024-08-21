@@ -180,7 +180,6 @@ def emit_archive(go, source = None, _recompile_suffix = "", recompile_internal_d
 
         # Information on dependencies
         _dep_labels = tuple([d.data.label for d in direct]),
-        _dep_importmaps = tuple([d.data.importmap for d in direct]),
 
         # Information needed by dependents
         file = out_lib,

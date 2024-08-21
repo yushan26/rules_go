@@ -19,7 +19,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -51,16 +50,11 @@ func link(args []string) error {
 	buildmode := flags.String("buildmode", "", "Build mode used.")
 	flags.Var(&xdefs, "X", "A string variable to replace in the linked binary (repeated).")
 	flags.Var(&stamps, "stamp", "The name of a file with stamping values.")
-	conflictErrMsg := flags.String("conflict_err", "", "Error message about conflicts to report if there's a link error.")
 	if err := flags.Parse(builderArgs); err != nil {
 		return err
 	}
 	if err := goenv.checkFlagsAndSetGoroot(); err != nil {
 		return err
-	}
-
-	if *conflictErrMsg != "" {
-		return errors.New(*conflictErrMsg)
 	}
 
 	// On Windows, take the absolute path of the output file and main file.

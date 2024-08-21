@@ -166,6 +166,17 @@ request_nogo_transition = transition(
     outputs = ["//go/private:request_nogo"],
 )
 
+def _non_request_nogo_transition(_settings, _attr):
+    # This transition is used to make sure we only end up with 1 copy of coverdata,
+    # even if a test links against it and is run in coverage mode.
+    return {"//go/private:request_nogo": False}
+
+non_request_nogo_transition = transition(
+    implementation = _non_request_nogo_transition,
+    inputs = [],
+    outputs = ["//go/private:request_nogo"],
+)
+
 go_transition = transition(
     implementation = _go_transition_impl,
     inputs = [

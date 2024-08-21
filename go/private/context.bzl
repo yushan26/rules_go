@@ -42,6 +42,7 @@ load(
 )
 load(
     "//go/private/rules:transition.bzl",
+    "non_request_nogo_transition",
     "request_nogo_transition",
 )
 load(
@@ -559,7 +560,7 @@ def _go_context_data_impl(ctx):
     nogo = ctx.files.nogo[0] if ctx.files.nogo else None
     providers = [
         GoContextInfo(
-            coverdata = ctx.attr.coverdata[GoArchive],
+            coverdata = ctx.attr.coverdata[0][GoArchive],
             nogo = nogo,
         ),
         ctx.attr.stdlib[GoStdLib],
@@ -575,6 +576,7 @@ go_context_data = rule(
         "cgo_context_data": attr.label(),
         "coverdata": attr.label(
             mandatory = True,
+            cfg = non_request_nogo_transition,
             providers = [GoArchive],
         ),
         "go_config": attr.label(
