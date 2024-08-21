@@ -120,7 +120,8 @@ def _go_binary_impl(ctx):
         include_deprecated_properties = False,
         importpath = ctx.attr.importpath,
         embed = ctx.attr.embed,
-        go_context_data = ctx.attr._go_context_data,
+        # It's a list because it is transitioned.
+        go_context_data = ctx.attr._go_context_data[0],
     )
 
     is_main = go.mode.link not in (LINKMODE_SHARED, LINKMODE_PLUGIN)

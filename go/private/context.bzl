@@ -410,9 +410,8 @@ def go_context(
         if hasattr(attr, "_go_config"):
             go_config_info = attr._go_config[GoConfigInfo]
         if hasattr(attr, "_stdlib"):
-            stdlib = _flatten_possibly_transitioned_attr(attr._stdlib)[GoStdLib]
+            stdlib = attr._stdlib[GoStdLib]
     else:
-        go_context_data = _flatten_possibly_transitioned_attr(go_context_data)
         if CgoContextInfo in go_context_data:
             cgo_context_info = go_context_data[CgoContextInfo]
         go_config_info = go_context_data[GoConfigInfo]
