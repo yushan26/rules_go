@@ -17,11 +17,6 @@ load(
     "paths",
 )
 load(
-    "//go/private:common.bzl",
-    "as_iterable",
-    "as_list",
-)
-load(
     "//go/private:providers.bzl",
     "GoArchive",
     "GoPath",
@@ -50,16 +45,16 @@ def _go_path_impl(ctx):
     # Collect sources and data files from archives. Merge archives into packages.
     pkg_map = {}  # map from package path to structs
     for mode, archives in mode_to_archive.items():
-        for archive in as_iterable(archives):
+        for archive in archives.to_list():
             importpath, pkgpath = effective_importpath_pkgpath(archive)
             if importpath == "":
                 continue  # synthetic archive or inferred location
             pkg = struct(
                 importpath = importpath,
                 dir = "src/" + pkgpath,
-                srcs = as_list(archive.srcs),
+                srcs = list(archive.srcs),
                 runfiles = archive.runfiles,
-                embedsrcs = as_list(archive._embedsrcs),
+                embedsrcs = list(archive._embedsrcs),
                 pkgs = {mode: archive.file},
             )
             if pkgpath in pkg_map:
