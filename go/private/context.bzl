@@ -259,7 +259,7 @@ def _dedup_archives(archives):
         deduped_archives.append(arc)
     return deduped_archives
 
-def _library_to_source(go, attr, library, coverage_instrumented):
+def _library_to_source(go, attr, library, coverage_instrumented, verify_resolver_deps = True):
     #TODO: stop collapsing a depset in this line...
     attr_srcs = [f for t in getattr(attr, "srcs", []) for f in as_iterable(t.files)]
     generated_srcs = getattr(library, "srcs", [])
@@ -310,6 +310,19 @@ def _library_to_source(go, attr, library, coverage_instrumented):
 
     if library.resolve:
         library.resolve(go, attr, source, _merge_embed)
+
+        # TODO(zbarsky): Remove this once downstream has a chance to migrate.
+        if verify_resolver_deps:
+            has_targets = False
+            for dep in source["deps"]:
+                if type(dep) == "Target":
+                    has_targets = True
+                    break
+            if has_targets:
+                print('Detected Targets in `source["deps"]` as a result of _resolver. ' +
+                      "Please pass a list of `GoArchive`s instead, for examples `deps = [deps[GoArchive] for dep in deps]`. " +
+                      "This will be an error in the future.")
+                source["deps"] = [get_archive(dep) for dep in source["deps"]]
 
     return GoSource(**source)
 

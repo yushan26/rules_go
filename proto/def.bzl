@@ -146,7 +146,7 @@ def _go_proto_library_impl(ctx):
         resolver = _proto_library_to_source,
         srcs = go_srcs,
     )
-    source = go.library_to_source(go, ctx.attr, library, False)
+    source = go.library_to_source(go, ctx.attr, library, False, verify_resolver_deps = False)
     providers = [library, source]
     output_groups = {
         "go_generated_srcs": go_srcs,
