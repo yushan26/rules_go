@@ -98,29 +98,9 @@ func compilePkg(args []string) error {
 		return err
 	}
 
-	// TODO(jayconrod): remove -testfilter flag. The test action should compile
-	// the main, internal, and external packages by calling compileArchive
-	// with the correct sources for each.
-	switch testFilter {
-	case "off":
-	case "only":
-		testSrcs := make([]fileInfo, 0, len(srcs.goSrcs))
-		for _, f := range srcs.goSrcs {
-			if strings.HasSuffix(f.pkg, "_test") {
-				testSrcs = append(testSrcs, f)
-			}
-		}
-		srcs.goSrcs = testSrcs
-	case "exclude":
-		libSrcs := make([]fileInfo, 0, len(srcs.goSrcs))
-		for _, f := range srcs.goSrcs {
-			if !strings.HasSuffix(f.pkg, "_test") {
-				libSrcs = append(libSrcs, f)
-			}
-		}
-		srcs.goSrcs = libSrcs
-	default:
-		return fmt.Errorf("invalid test filter %q", testFilter)
+	err = applyTestFilter(testFilter, &srcs)
+	if err != nil {
+		return err
 	}
 
 	return compileArchive(
@@ -351,43 +331,9 @@ func compileArchive(
 		gcFlags = append(gcFlags, createTrimPath(gcFlags, "."))
 	}
 
-	// Check that the filtered sources don't import anything outside of
-	// the standard library and the direct dependencies.
-	imports, err := checkImports(srcs.goSrcs, deps, packageListPath, importPath, recompileInternalDeps)
+	importcfgPath, err := checkImportsAndBuildCfg(goenv, importPath, srcs, deps, packageListPath, recompileInternalDeps, compilingWithCgo, coverMode, workDir)
 	if err != nil {
 		return err
-	}
-	if compilingWithCgo {
-		// cgo generated code imports some extra packages.
-		imports["runtime/cgo"] = nil
-		imports["syscall"] = nil
-		imports["unsafe"] = nil
-	}
-	if coverMode != "" {
-		if coverMode == "atomic" {
-			imports["sync/atomic"] = nil
-		}
-		const coverdataPath = "github.com/bazelbuild/rules_go/go/tools/coverdata"
-		var coverdata *archive
-		for i := range deps {
-			if deps[i].importPath == coverdataPath {
-				coverdata = &deps[i]
-				break
-			}
-		}
-		if coverdata == nil {
-			return errors.New("coverage requested but coverdata dependency not provided")
-		}
-		imports[coverdataPath] = coverdata
-	}
-
-	// Build an importcfg file for the compiler.
-	importcfgPath, err := buildImportcfgFileForCompile(imports, goenv.installSuffix, filepath.Dir(outLinkObj))
-	if err != nil {
-		return err
-	}
-	if !goenv.shouldPreserveWorkDir {
-		defer os.Remove(importcfgPath)
 	}
 
 	// Build an embedcfg file mapping embed patterns to filenames.
@@ -488,6 +434,45 @@ func compileArchive(
 	}
 
 	return nil
+}
+
+func checkImportsAndBuildCfg(goenv *env, importPath string, srcs archiveSrcs, deps []archive, packageListPath string, recompileInternalDeps []string, compilingWithCgo bool, coverMode string, workDir string) (string, error) {
+	// Check that the filtered sources don't import anything outside of
+	// the standard library and the direct dependencies.
+	imports, err := checkImports(srcs.goSrcs, deps, packageListPath, importPath, recompileInternalDeps)
+	if err != nil {
+		return "", err
+	}
+	if compilingWithCgo {
+		// cgo generated code imports some extra packages.
+		imports["runtime/cgo"] = nil
+		imports["syscall"] = nil
+		imports["unsafe"] = nil
+	}
+	if coverMode != "" {
+		if coverMode == "atomic" {
+			imports["sync/atomic"] = nil
+		}
+		const coverdataPath = "github.com/bazelbuild/rules_go/go/tools/coverdata"
+		var coverdata *archive
+		for i := range deps {
+			if deps[i].importPath == coverdataPath {
+				coverdata = &deps[i]
+				break
+			}
+		}
+		if coverdata == nil {
+			return "", errors.New("coverage requested but coverdata dependency not provided")
+		}
+		imports[coverdataPath] = coverdata
+	}
+
+	// Build an importcfg file for the compiler.
+	importcfgPath, err := buildImportcfgFileForCompile(imports, goenv.installSuffix, workDir)
+	if err != nil {
+		return "", err
+	}
+	return importcfgPath, nil
 }
 
 func compileGo(goenv *env, srcs []string, packagePath, importcfgPath, embedcfgPath, asmHdrPath, symabisPath string, gcFlags []string, pgoprofile, outLinkobjPath, outInterfacePath string) error {

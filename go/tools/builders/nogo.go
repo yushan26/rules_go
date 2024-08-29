@@ -23,6 +23,7 @@ func nogo(args []string) error {
 	var unfilteredSrcs, recompileInternalDeps multiFlag
 	var deps, facts archiveMultiFlag
 	var importPath, packagePath, nogoPath, packageListPath string
+	var testFilter string
 	var outFactsPath, outLogPath string
 	var coverMode string
 	fs.Var(&unfilteredSrcs, "src", ".go, .c, .cc, .m, .mm, .s, or .S file to be filtered and compiled")
@@ -33,6 +34,7 @@ func nogo(args []string) error {
 	fs.StringVar(&packageListPath, "package_list", "", "The file containing the list of standard library packages")
 	fs.Var(&recompileInternalDeps, "recompile_internal_deps", "The import path of the direct dependencies that needs to be recompiled.")
 	fs.StringVar(&coverMode, "cover_mode", "", "The coverage mode to use. Empty if coverage instrumentation should not be added.")
+	fs.StringVar(&testFilter, "testfilter", "off", "Controls test package filtering")
 	fs.StringVar(&nogoPath, "nogo", "", "The nogo binary")
 	fs.StringVar(&outFactsPath, "out_facts", "", "The file to emit serialized nogo facts to")
 	fs.StringVar(&outLogPath, "out_log", "", "The file to emit nogo logs into")
@@ -48,6 +50,11 @@ func nogo(args []string) error {
 
 	// Filter sources.
 	srcs, err := filterAndSplitFiles(unfilteredSrcs)
+	if err != nil {
+		return err
+	}
+
+	err = applyTestFilter(testFilter, &srcs)
 	if err != nil {
 		return err
 	}
@@ -68,41 +75,10 @@ func nogo(args []string) error {
 	}
 	defer cleanup()
 
-	imports, err := checkImports(srcs.goSrcs, deps, packageListPath, importPath, recompileInternalDeps)
+	compilingWithCgo := os.Getenv("CGO_ENABLED") == "1" && haveCgo
+	importcfgPath, err := checkImportsAndBuildCfg(goenv, importPath, srcs, deps, packageListPath, recompileInternalDeps, compilingWithCgo, coverMode, workDir)
 	if err != nil {
 		return err
-	}
-	cgoEnabled := os.Getenv("CGO_ENABLED") == "1"
-	if haveCgo && cgoEnabled {
-		// cgo generated code imports some extra packages.
-		imports["runtime/cgo"] = nil
-		imports["syscall"] = nil
-		imports["unsafe"] = nil
-	}
-	if coverMode != "" {
-		if coverMode == "atomic" {
-			imports["sync/atomic"] = nil
-		}
-		const coverdataPath = "github.com/bazelbuild/rules_go/go/tools/coverdata"
-		var coverdata *archive
-		for i := range deps {
-			if deps[i].importPath == coverdataPath {
-				coverdata = &deps[i]
-				break
-			}
-		}
-		if coverdata == nil {
-			return errors.New("coverage requested but coverdata dependency not provided")
-		}
-		imports[coverdataPath] = coverdata
-	}
-
-	importcfgPath, err := buildImportcfgFileForCompile(imports, goenv.installSuffix, filepath.Dir(outFactsPath))
-	if err != nil {
-		return err
-	}
-	if !goenv.shouldPreserveWorkDir {
-		defer os.Remove(importcfgPath)
 	}
 
 	return runNogo(workDir, nogoPath, goSrcs, facts, importPath, importcfgPath, outFactsPath, outLogPath)
@@ -111,7 +87,16 @@ func nogo(args []string) error {
 func runNogo(workDir string, nogoPath string, srcs []string, facts []archive, packagePath, importcfgPath, outFactsPath string, outLogPath string) error {
 	if len(srcs) == 0 {
 		// emit_compilepkg expects a nogo facts file, even if it's empty.
-		return os.WriteFile(outFactsPath, nil, 0o666)
+		// We also need to write the validation output log.
+		err := os.WriteFile(outFactsPath, nil, 0o666)
+		if err != nil {
+			return fmt.Errorf("error writing empty nogo facts file: %v", err)
+		}
+		err = os.WriteFile(outLogPath, nil, 0o666)
+		if err != nil {
+			return fmt.Errorf("error writing empty nogo log file: %v", err)
+		}
+		return nil
 	}
 	args := []string{nogoPath}
 	args = append(args, "-p", packagePath)
