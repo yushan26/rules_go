@@ -283,7 +283,7 @@ This will allow you to drop the `gazelle_override` tag and also makes the Go mod
 Users can apply custom default directives or extra args to **all** modules, these can be added via a `go_deps.gazelle_default_attributes`. These will
 disable/overwrite the [public registry overrides](https://github.com/bazelbuild/bazel-gazelle/blob/master/internal/bzlmod/default_gazelle_overrides.bzl).
 
-```
+```starlark
 go_deps.gazelle_default_attributes(
     build_extra_args = [
         "-go_naming_convention_external=go_default_library",
