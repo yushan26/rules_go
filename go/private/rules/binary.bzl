@@ -464,6 +464,17 @@ go_non_executable_binary = rule(executable = False, **_go_binary_kwargs(
 ))
 
 def _go_tool_binary_impl(ctx):
+    # Keep in mind that the actions registered by this rule may not be
+    # sandboxed, so care must be taken to make them hermetic, for example by
+    # preventing `go build` from searching for go.mod or downloading a
+    # different toolchain version.
+    #
+    # A side effect of the usage of GO111MODULE below is that the absolute
+    # path to the sources is included in the buildid, which would make the
+    # resulting binary non-reproducible. We thus need to blank it out.
+    # https://github.com/golang/go/blob/583d750fa119d504686c737be6a898994b674b69/src/cmd/go/internal/load/pkg.go#L1764-L1766
+    # https://github.com/golang/go/blob/583d750fa119d504686c737be6a898994b674b69/src/cmd/go/internal/work/exec.go#L284
+
     sdk = ctx.attr.sdk[GoSDK]
     name = ctx.label.name
     if sdk.goos == "windows":
@@ -478,7 +489,9 @@ def _go_tool_binary_impl(ctx):
 set GOMAXPROCS=1
 set GOCACHE=%cd%\\{gotmp}\\gocache
 set GOPATH=%cd%"\\{gotmp}\\gopath
-{go} build -o {out} -trimpath -ldflags \"{ldflags}\" {srcs}
+set GOTOOLCHAIN=local
+set GO111MODULE=off
+{go} build -o {out} -trimpath -ldflags \"-buildid='' {ldflags}\" {srcs}
 set GO_EXIT_CODE=%ERRORLEVEL%
 RMDIR /S /Q "{gotmp}"
 MKDIR "{gotmp}"
@@ -506,7 +519,16 @@ exit /b %GO_EXIT_CODE%
         )
     else:
         # Note: GOPATH is needed for Go 1.16.
-        cmd = """GOTMP=$(mktemp -d);trap "rm -rf \"$GOTMP\"" EXIT;GOMAXPROCS=1 GOCACHE="$GOTMP"/gocache GOPATH="$GOTMP"/gopath {go} build -o {out} -trimpath -ldflags '{ldflags}' {srcs}""".format(
+        cmd = """
+GOTMP=$(mktemp -d)
+trap "rm -rf \"$GOTMP\"" EXIT
+GOMAXPROCS=1 \
+GOCACHE="$GOTMP"/gocache \
+GOPATH="$GOTMP"/gopath \
+GOTOOLCHAIN=local \
+GO111MODULE=off \
+{go} build -o {out} -trimpath -ldflags '-buildid="" {ldflags}' {srcs}
+""".format(
             go = sdk.go.path,
             out = out.path,
             srcs = " ".join([f.path for f in ctx.files.srcs]),
