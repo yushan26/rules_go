@@ -503,7 +503,7 @@ def go_context(
 
     if goos == "auto" and goarch == "auto" and cgo_context_info:
         # Fast-path to reuse the GoConfigInfo as-is
-        mode = go_config_info
+        mode = go_config_info or default_go_config_info
     else:
         if go_config_info == None:
             go_config_info = default_go_config_info
@@ -514,7 +514,7 @@ def go_context(
             if getattr(ctx.attr, "pure", None) == "off":
                 fail("{} has pure explicitly set to off, but no C++ toolchain could be found for its platform".format(ctx.label))
             mode_kwargs["pure"] = True
-        mode = struct(**mode_kwargs)
+        mode = GoConfigInfo(**mode_kwargs)
         validate_mode(mode)
 
     if stdlib:
